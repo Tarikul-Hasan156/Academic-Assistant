@@ -1,0 +1,84 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8" />
+    <title>{% block title %}Academic Portal{% endblock %}</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        body::before {
+            content: "";
+            background-image: url('https://th.bing.com/th/id/R.b902429b6158d6bbbd094f7e721ff61c?rik=ibDsDpJ2ASQV8w&riu=http%3a%2f%2fnew.bubt.edu.bd%2fassets%2ffrontend%2fimages%2fslider%2fbubt_building_slider2.jpg&ehk=OGv2mkE8uzAGiIxB%2b9KphNPc4WoH2BT00qn7xNhw0M0%3d&risl=&pid=ImgRaw&r=0');
+            background-size: cover;
+            background-repeat: no-repeat;
+            background-position: center;
+            opacity: 0.5; /* Adjust for visibility */
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            z-index: -1; /* Place behind all content */
+        }
+    </style>
+
+</head>
+<body class="relative bg-gray-100 font-sans">
+
+    <!-- Navbar -->
+    <nav class="bg-white shadow">
+        <div class="container mx-auto px-4 py-3 flex justify-between items-center">
+            {% if user.is_authenticated %}
+                <a href="{% url 'dashboard' %}" class="text-xl font-bold text-blue-600">BUBT Academic Portal</a>
+            {% else %}
+                <a href="{% url 'home' %}" class="text-xl font-bold text-blue-600">BUBT Academic Portal</a>
+            {% endif %}
+
+            <div class="space-x-4">
+                {% if user.is_authenticated %}
+                    {% if is_student %}
+                        <a href="{% url 'student-profile' %}" class="text-gray-700 hover:text-blue-600">Student Profile</a>
+                        <a href="{% url 'logout' %}" class="text-gray-700 hover:text-blue-600">Logout</a>
+                    {% elif is_faculty %}
+                        <a href="{% url 'faculty-profile' %}" class="text-gray-700 hover:text-blue-600">Faculty Profile</a>
+                        <a href="{% url 'logout' %}" class="text-gray-700 hover:text-blue-600">Logout</a>
+                    {% endif %}
+                {% else %}
+                    <a href="{% url 'student-login' %}" class="text-gray-700 hover:text-blue-600">Student Login</a>
+                    <a href="{% url 'student-register' %}" class="text-gray-700 hover:text-blue-600">Student Register</a>
+                    <a href="{% url 'faculty-login' %}" class="text-gray-700 hover:text-blue-600">Faculty Login</a>
+                    <a href="{% url 'faculty-register' %}" class="text-gray-700 hover:text-blue-600">Faculty Register</a>
+                {% endif %}
+            </div>
+        </div>
+    </nav>
+
+
+    <div class="container mx-auto p-4">
+        {% block content %}{% endblock %}
+    </div>
+
+    {% if messages %}
+        <div id="message-container" class="max-w-xl mx-auto mt-4">
+            {% for message in messages %}
+                <div class="p-4 mb-2 rounded text-white transition-opacity duration-500 ease-in-out
+                    {% if message.tags == 'error' %}bg-red-500
+                    {% elif message.tags == 'success' %}bg-green-500
+                    {% else %}bg-blue-500{% endif %}">
+                    {{ message }}
+                </div>
+            {% endfor %}
+        </div>
+    {% endif %}
+
+    <script>
+    setTimeout(() => {
+        const container = document.getElementById('message-container');
+        if (container) {
+            container.style.opacity = '0';
+            setTimeout(() => container.remove(), 500);
+        }
+    }, 5000);
+    </script>
+
+</body>
+</html>

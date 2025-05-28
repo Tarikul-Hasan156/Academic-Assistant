@@ -1,0 +1,41 @@
+{% extends 'base.html' %}
+{% block title %}Faculty Login{% endblock %}
+
+{% block content %}
+<div class="max-w-md mx-auto bg-white p-6 rounded shadow mt-10">
+    <h2 class="text-xl font-semibold mb-4 text-center text-green-600">Faculty Login</h2>
+
+    {% if messages %}
+        <div id="message-container" class="mb-4">
+            {% for message in messages %}
+                <div class="p-3 rounded text-white mb-2 transition-opacity duration-500
+                    {% if message.tags == 'error' %}bg-red-500
+                    {% elif message.tags == 'success' %}bg-green-500
+                    {% else %}bg-blue-500{% endif %}">
+                    {{ message }}
+                </div>
+            {% endfor %}
+        </div>
+    {% endif %}
+
+    <form method="POST" class="space-y-4">
+        {% csrf_token %}
+        <input type="email" name="email" placeholder="Email" class="w-full p-2 border rounded" required>
+        <input type="password" name="password" placeholder="Password" class="w-full p-2 border rounded" required>
+        <button type="submit" class="w-full bg-green-500 text-white px-4 py-2 rounded hover:bg-green-600">
+            Login
+        </button>
+    </form>
+</div>
+
+<script>
+    setTimeout(() => {
+        const container = document.getElementById('message-container');
+        if (container) {
+            container.style.opacity = '0';
+            setTimeout(() => container.remove(), 500);
+        }
+    }, 5000);
+</script>
+{% endblock %}
+
