@@ -2,166 +2,168 @@
 {% block title %}Dashboard{% endblock %}
 
 {% block content %}
-<div class="max-w-3xl mx-auto bg-white/80 p-6 rounded shadow mt-8">
-
-    {% if is_student %}
-        <h2 class="text-xl font-semibold mb-4">Student Dashboard</h2>
-    {% elif is_faculty %}
-        <h2 class="text-xl font-semibold mb-4">Faculty Dashboard</h2>
-    {% else %}
-        <p class="text-center text-gray-700">Welcome! Please log in to access the dashboard.
-            <a href="{% url 'home' %}" class="text-xl font-bold text-blue-600">Login</a>
-        </p>
-    {% endif %}
-
-    {% if is_student or is_faculty %}
-        <!-- Options -->
-        <div class="flex flex-col sm:flex-row gap-4 justify-center mb-6">
-            <button onclick="toggleSection('student')" class="bg-blue-500 text-white px-4 py-2 rounded w-full sm:w-auto">Search Student Profile</button>
-            <button onclick="toggleSection('faculty')" class="bg-blue-500 text-white px-4 py-2 rounded w-full sm:w-auto">Search Faculty Profile</button>
-            <button onclick="toggleSection('routine')" class="bg-blue-500 text-white px-4 py-2 rounded w-full sm:w-auto">Search Routine</button>
-        </div>
-
-        <!-- Search Student -->
-        <div id="student" class="hidden mb-6">
-            <form method="GET" action="" class="space-y-2">
-                <h3 class="text-lg font-semibold">Search Student Profile</h3>
-                <input type="text" name="student_id" placeholder="Student ID" class="w-full p-2 border rounded">
-                <input type="text" name="name" placeholder="Name" class="w-full p-2 border rounded">
-                <button type="submit" class="bg-green-600 text-white px-4 py-2 rounded">Search</button>
-            </form>
-        </div>
-
-        <!-- Search Faculty -->
-        <div id="faculty" class="hidden mb-6">
-            <form method="GET" action="" class="space-y-2">
-                <h3 class="text-lg font-semibold">Search Faculty Profile</h3>
-                <input type="text" name="faculty_name" placeholder="Faculty Name" class="w-full p-2 border rounded">
-                <input type="text" name="faculty_code" placeholder="Faculty Code" class="w-full p-2 border rounded">
-                <button type="submit" class="bg-green-600 text-white px-4 py-2 rounded">Search</button>
-            </form>
-        </div>
-
-        <!-- Search Routine -->
-        <div id="routine" class="hidden">
-            <form method="GET" action="" class="space-y-2">
-                <h3 class="text-lg font-semibold">Search Routine</h3>
-                {% if is_student %}
-                    <input type="text" name="student_id" placeholder="Student ID" class="w-full p-2 border rounded">
-                {% else %}
-                    <input type="text" name="faculty_code" placeholder="Faculty Code" class="w-full p-2 border rounded">
-                {% endif %}
-                <input type="text" name="day" placeholder="Class Day" class="w-full p-2 border rounded">
-                <button type="submit" class="bg-green-600 text-white px-4 py-2 rounded">Search</button>
-            </form>
-        </div>
-    {% endif %}
-
-    <!-- Search Result for Student -->
-    <div id="student-result" class="mt-6">
-        {% if request.GET.student_id or request.GET.name %}
-            <div class="mt-6">
-                <h3 class="text-lg font-semibold mb-2">
-                    Student Search Results:
-                </h3>
-                <p class="text-sm text-gray-600 mb-2">
-                    You searched for:
-                    {% if request.GET.student_id %} Student ID = "{{ request.GET.student_id }}" {% endif %}
-                    {% if request.GET.name %} {% if request.GET.student_id %}and{% endif %} Name = "{{ request.GET.name }}" {% endif %}
+<div class="max-w-7xl mx-auto bg-white/80 p-6 rounded shadow mt-8">
+    <div class="flex">
+        <!-- Left Column: Main Content -->
+        <div class="w-full md:w-3/4 pr-4">
+            {% if is_student %}
+                <h2 class="text-xl font-semibold mb-4">Student Dashboard</h2>
+            {% elif is_faculty %}
+                <h2 class="text-xl font-semibold mb-4">Faculty Dashboard</h2>
+            {% else %}
+                <p class="text-center text-gray-700">Welcome! Please log in to access the dashboard.
+                    <a href="{% url 'home' %}" class="text-xl font-bold text-blue-600">Login</a>
                 </p>
-                {% if student_results %}
-                    {% for student in student_results %}
-                        <div class="border p-4 rounded mb-2">
-                            <p><strong>Name:</strong> {{ student.student_name }}</p>
-                            <p><strong>Student ID:</strong> {{ student.student_id }}</p>
-                            <p><strong>Department:</strong> {{ student.department }}</p>
-                            <p><strong>Intake:</strong> {{ student.intake }}</p>
-                            <p><strong>Section:</strong> {{ student.section }}</p>
-                            <p><strong>Blood Group:</strong> {{ student.blood_group }}</p>
-                        </div>
-                    {% endfor %}
-                {% else %}
-                    <p>No student found.</p>
+            {% endif %}
+
+            {% if is_student or is_faculty %}
+                <!-- Options -->
+                <div class="flex flex-col sm:flex-row gap-4 justify-center mb-6">
+                    <button onclick="toggleSection('student')" class="bg-blue-500 text-white px-4 py-2 rounded w-full sm:w-auto">Search Student Profile</button>
+                    <button onclick="toggleSection('faculty')" class="bg-blue-500 text-white px-4 py-2 rounded w-full sm:w-auto">Search Faculty Profile</button>
+                    <button onclick="toggleSection('routine')" class="bg-blue-500 text-white px-4 py-2 rounded w-full sm:w-auto">Search Routine</button>
+                </div>
+
+                <!-- Search Sections (Student, Faculty, Routine) -->
+                <div id="student" class="hidden mb-6">
+                    <form method="GET" action="" class="space-y-2">
+                        <h3 class="text-lg font-semibold">Search Student Profile</h3>
+                        <input type="text" name="student_id" placeholder="Student ID" class="w-full p-2 border rounded">
+                        <input type="text" name="name" placeholder="Name" class="w-full p-2 border rounded">
+                        <button type="submit" class="bg-green-600 text-white px-4 py-2 rounded">Search</button>
+                    </form>
+                </div>
+
+                <div id="faculty" class="hidden mb-6">
+                    <form method="GET" action="" class="space-y-2">
+                        <h3 class="text-lg font-semibold">Search Faculty Profile</h3>
+                        <input type="text" name="faculty_name" placeholder="Faculty Name" class="w-full p-2 border rounded">
+                        <input type="text" name="faculty_code" placeholder="Faculty Code" class="w-full p-2 border rounded">
+                        <button type="submit" class="bg-green-600 text-white px-4 py-2 rounded">Search</button>
+                    </form>
+                </div>
+
+                <div id="routine" class="hidden">
+                    <form method="GET" action="" class="space-y-2">
+                        <h3 class="text-lg font-semibold">Search Routine</h3>
+                        {% if is_student %}
+                            <input type="text" name="student_id" placeholder="Student ID" class="w-full p-2 border rounded">
+                        {% else %}
+                            <input type="text" name="faculty_code" placeholder="Faculty Code" class="w-full p-2 border rounded">
+                        {% endif %}
+                        <input type="text" name="day" placeholder="Class Day" class="w-full p-2 border rounded">
+                        <button type="submit" class="bg-green-600 text-white px-4 py-2 rounded">Search</button>
+                    </form>
+                </div>
+            {% endif %}
+
+            <!-- Search Results -->
+            <div id="student-result" class="mt-6">
+                {% if request.GET.student_id or request.GET.name %}
+                    <div class="mt-6">
+                        <h3 class="text-lg font-semibold mb-2">Student Search Results:</h3>
+                        <p class="text-sm text-gray-600 mb-2">You searched for:
+                            {% if request.GET.student_id %} Student ID = "{{ request.GET.student_id }}" {% endif %}
+                            {% if request.GET.name %} {% if request.GET.student_id %}and{% endif %} Name = "{{ request.GET.name }}" {% endif %}
+                        </p>
+                        {% if student_results %}
+                            {% for student in student_results %}
+                                <div class="border p-4 rounded mb-2">
+                                    <p><strong>Name:</strong> {{ student.student_name }}</p>
+                                    <p><strong>Student ID:</strong> {{ student.student_id }}</p>
+                                    <p><strong>Department:</strong> {{ student.department }}</p>
+                                    <p><strong>Intake:</strong> {{ student.intake }}</p>
+                                    <p><strong>Section:</strong> {{ student.section }}</p>
+                                    <p><strong>Blood Group:</strong> {{ student.blood_group }}</p>
+                                </div>
+                            {% endfor %}
+                        {% else %}
+                            <p>No student found.</p>
+                        {% endif %}
+                    </div>
                 {% endif %}
             </div>
-        {% endif %}
-    </div>
 
-    <!-- Search Result for Faculty -->
-    <div id="faculty-result" class="mt-6">
-        {% if request.GET.faculty_name or request.GET.faculty_code %}
-            <div class="mt-6">
-                <h3 class="text-lg font-semibold mb-2">
-                    Faculty Search Results:
-                </h3>
-                <p class="text-sm text-gray-600 mb-2">
-                    You searched for:
-                    {% if request.GET.faculty_name %} Name = "{{ request.GET.faculty_name }}" {% endif %}
-                    {% if request.GET.faculty_code %} {% if request.GET.faculty_name %}and{% endif %} Code = "{{ request.GET.faculty_code }}" {% endif %}
-                </p>
-                {% if faculty_results %}
-                    {% for faculty in faculty_results %}
-                        <div class="border p-4 rounded mb-2">
-                            {% if faculty.picture %}
-                                <img src="{{ faculty.picture.url }}" alt=" {{ faculty.name }} " class="w-64 h-64 object-fit rounded mb-2"><br>
-                            {% else %}
-                                <p>No image available.</p><br>
-                            {% endif %}
-                            <p><strong>Name:</strong> {{ faculty.name }}</p>
-                            <p><strong>Faculty Code:</strong> {{ faculty.faculty_code }}</p>
-                            <p><strong>Department:</strong> {{ faculty.department }}</p>
-                            <p><strong>Designation:</strong> {{ faculty.position }}</p>
-                            <p><strong>Email:</strong> {{ faculty.email }}</p>
-                            <p><strong>Office Building:</strong> {{ faculty.office_building }}</p>
-                            <p><strong>Room No:</strong> {{ faculty.room_name }}</p><br>
-                            <div class="border border-black p-4">
-                                <p><strong>Academic Background:</strong> {{ faculty.academic_background }}</p>
-                            </div>
-                            <div class="border border-black p-4">
-                                <p><strong>Experience:</strong> {{ faculty.experience }}</p>
-                            </div>
-                            <div class="border border-black p-4">
-                                <p><strong>Biography:</strong> {{ faculty.biography }}</p>
-                            </div>
-                        </div>
-                    {% endfor %}
-                {% else %}
-                    <p>No faculty found.</p>
+            <div id="faculty-result" class="mt-6">
+                {% if request.GET.faculty_name or request.GET.faculty_code %}
+                    <div class="mt-6">
+                        <h3 class="text-lg font-semibold mb-2">Faculty Search Results:</h3>
+                        <p class="text-sm text-gray-600 mb-2">You searched for:
+                            {% if request.GET.faculty_name %} Name = "{{ request.GET.faculty_name }}" {% endif %}
+                            {% if request.GET.faculty_code %} {% if request.GET.faculty_name %}and{% endif %} Code = "{{ request.GET.faculty_code }}" {% endif %}
+                        </p>
+                        {% if faculty_results %}
+                            {% for faculty in faculty_results %}
+                                <div class="border p-4 rounded mb-2">
+                                    {% if faculty.picture %}
+                                        <img src="{{ faculty.picture.url }}" alt=" {{ faculty.name }} " class="w-64 h-64 object-cover rounded mb-2"><br>
+                                    {% else %}
+                                        <p>No image available.</p><br>
+                                    {% endif %}
+                                    <p><strong>Name:</strong> {{ faculty.name }}</p>
+                                    <p><strong>Faculty Code:</strong> {{ faculty.faculty_code }}</p>
+                                    <p><strong>Department:</strong> {{ faculty.department }}</p>
+                                    <p><strong>Designation:</strong> {{ faculty.position }}</p>
+                                    <p><strong>Email:</strong> {{ faculty.email }}</p>
+                                    <p><strong>Office Building:</strong> {{ faculty.office_building }}</p>
+                                    <p><strong>Room No:</strong> {{ faculty.room_name }}</p><br>
+                                    <div class="border border-black p-4">
+                                        <p><strong>Academic Background:</strong> {{ faculty.academic_background }}</p>
+                                    </div>
+                                    <div class="border border-black p-4">
+                                        <p><strong>Experience:</strong> {{ faculty.experience }}</p>
+                                    </div>
+                                    <div class="border border-black p-4">
+                                        <p><strong>Biography:</strong> {{ faculty.biography }}</p>
+                                    </div>
+                                </div>
+                            {% endfor %}
+                        {% else %}
+                            <p>No faculty found.</p>
+                        {% endif %}
+                    </div>
                 {% endif %}
             </div>
-        {% endif %}
-    </div>
 
-    <!-- Search Result for Routine -->
-    <div id="routine-result" class="mt-6">
-        {% if request.GET.day %}
-            <div class="mt-6">
-                <h3 class="text-lg font-semibold mb-2">
-                    Routine Search Results:
-                </h3>
-                <p class="text-sm text-gray-600 mb-2">
-                    You searched for:
-                    {% if is_student and request.GET.student_id %} Student ID = "{{ request.GET.student_id }}" {% endif %}
-                    {% if is_faculty and request.GET.faculty_code %} Faculty Code = "{{ request.GET.faculty_code }}" {% endif %}
-                    {% if request.GET.day %} {% if request.GET.student_id or request.GET.faculty_code %}and{% endif %} Date = "{{ request.GET.day }}" {% endif %}
-                </p>
-                {% if routine_results %}
-                    {% for routine in routine_results %}
-                        <div class="border p-4 rounded mb-2">
-                            <p><strong>Day:</strong> {{ routine.day_name }}</p>
-                            <p><strong>Time:</strong> {{ routine.start_time }} - {{ routine.end_time }}</p>
-                            <p><strong>Course Code:</strong> {{ routine.class_code }}</p>
-                            <p><strong>Room and Building No:</strong> {{ routine.room_no }} - {{ routine.build_no }} </p>
-                            <p><strong>Faculty:</strong> {{ routine.faculty_code }}</p>
-                            <p><strong>Department:</strong> {{ routine.department }}</p>
-                            <p><strong>Intake-Section:</strong> {{ routine.intake }} - {{ routine.section }}</p>
-                        </div>
-                    {% endfor %}
-                {% else %}
-                    <p>No routine found.</p>
+            <div id="routine-result" class="mt-6">
+                {% if request.GET.day %}
+                    <div class="mt-6">
+                        <h3 class="text-lg font-semibold mb-2">Routine Search Results:</h3>
+                        <p class="text-sm text-gray-600 mb-2">You searched for:
+                            {% if is_student and request.GET.student_id %} Student ID = "{{ request.GET.student_id }}" {% endif %}
+                            {% if is_faculty and request.GET.faculty_code %} Faculty Code = "{{ request.GET.faculty_code }}" {% endif %}
+                            {% if request.GET.day %} {% if request.GET.student_id or request.GET.faculty_code %}and{% endif %} Date = "{{ request.GET.day }}" {% endif %}
+                        </p>
+                        {% if routine_results %}
+                            {% for routine in routine_results %}
+                                <div class="border p-4 rounded mb-2">
+                                    <p><strong>Day:</strong> {{ routine.day_name }}</p>
+                                    <p><strong>Time:</strong> {{ routine.start_time }} - {{ routine.end_time }}</p>
+                                    <p><strong>Course Code:</strong> {{ routine.class_code }}</p>
+                                    <p><strong>Room and Building No:</strong> {{ routine.room_no }} - {{ routine.build_no }} </p>
+                                    <p><strong>Faculty:</strong> {{ routine.faculty_code }}</p>
+                                    <p><strong>Department:</strong> {{ routine.department }}</p>
+                                    <p><strong>Intake-Section:</strong> {{ routine.intake }} - {{ routine.section }}</p>
+                                </div>
+                            {% endfor %}
+                        {% else %}
+                            <p>No routine found.</p>
+                        {% endif %}
+                    </div>
                 {% endif %}
             </div>
-        {% endif %}
+        </div>
+
+        <!-- Right Column: Help Option -->
+        <div class="w-full md:w-1/4 bg-gray-100 p-6 rounded ml-4">
+            <h3 class="text-lg font-semibold mb-4">How can I help you?</h3>
+            <ul>
+                <!-- <li><a href="#student" class="text-blue-600 hover:underline">Search Student Profile</a></li>
+                <li><a href="#faculty" class="text-blue-600 hover:underline">Search Faculty Profile</a></li>
+                <li><a href="#routine" class="text-blue-600 hover:underline">Search Routine</a></li> -->
+                <li><a href="#" class="text-blue-600 hover:underline">Contact Support</a></li>
+            </ul>
+        </div>
     </div>
 </div>
 
@@ -199,6 +201,5 @@
         }
     }
 </script>
-
 
 {% endblock %}

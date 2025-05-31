@@ -186,8 +186,18 @@ def faculty_login(request):
 
 @login_required
 def student_profile(request):
-    return render(request, 'student_profile.html')
+    try:
+        student = Student.objects.get(user=request.user)
+    except Student.DoesNotExist:
+        student = None
+
+    return render(request, 'student_profile.html', {'student': student})
 
 @login_required
 def faculty_profile(request):
-    return render(request, 'faculty_profile.html')
+    try:
+        faculty = Faculty.objects.get(user=request.user)
+    except Faculty.DoesNotExist:
+        faculty = None
+
+    return render(request, 'faculty_profile.html', {'faculty': faculty})

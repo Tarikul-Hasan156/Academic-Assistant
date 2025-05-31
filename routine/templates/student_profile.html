@@ -1,6 +1,66 @@
 {% extends 'base.html' %}
+{% load static %}
 {% block title %}Student Profile{% endblock %}
 {% block content %}
-<h2 class="text-xl font-semibold">Welcome, {{ request.user.username }}</h2>
-<p>This is your student profile page.</p>
+<div class="container mx-auto px-4 py-8">
+    <!-- Profile Header Section -->
+    <div class="bg-white shadow-md rounded-lg p-6">
+        <div class="flex items-center space-x-4">
+            <!-- Profile Picture (placeholder) -->
+            <div class="w-20 h-20 bg-gray-300 rounded-full flex-shrink-0">
+                <img src="{% static 'img/default-avatar.png' %}" alt="Profile Picture" class="w-full h-full rounded-full object-cover">
+            </div>
+            <!-- Profile Info -->
+            <div>
+                <h2 class="text-2xl font-semibold text-gray-800">Welcome, {{ student.student_name }}</h2>
+                <p class="text-gray-600">Student ID: {{ student.student_id }}</p>
+                <p class="text-gray-600">Department: {{ student.get_department_display }}</p>
+            </div>
+        </div>
+    </div>
+
+    <!-- Profile Details Section -->
+    <div class="mt-6 grid grid-cols-1 md:grid-cols-2 gap-6">
+        <!-- Personal Information -->
+        <div class="bg-white shadow-md rounded-lg p-6">
+            <h3 class="text-xl font-semibold text-gray-800 mb-4">Personal Information</h3>
+            <ul class="space-y-4">
+                <li class="flex justify-between text-gray-700">
+                    <span class="font-medium">Name:</span>
+                    <span>{{ student.student_name }}</span>
+                </li>
+                <li class="flex justify-between text-gray-700">
+                    <span class="font-medium">Student ID:</span>
+                    <span>{{ student.student_id }}</span>
+                </li>
+                <li class="flex justify-between text-gray-700">
+                    <span class="font-medium">Department:</span>
+                    <span>{{ student.get_department_display }}</span>
+                </li>
+                <li class="flex justify-between text-gray-700">
+                    <span class="font-medium">Intake:</span>
+                    <span>{{ student.intake }}</span>
+                </li>
+                <li class="flex justify-between text-gray-700">
+                    <span class="font-medium">Section:</span>
+                    <span>{{ student.section }}</span>
+                </li>
+                <li class="flex justify-between text-gray-700">
+                    <span class="font-medium">Blood Group:</span>
+                    <span>{{ student.get_blood_group_display }}</span>
+                </li>
+            </ul>
+        </div>
+
+        <!-- Account Settings Section -->
+        <div class="bg-white shadow-md rounded-lg p-6">
+            <h3 class="text-xl font-semibold text-gray-800 mb-4">Account Settings</h3>
+            <ul class="space-y-4">
+                <li>
+                    <a href="/" class="text-blue-600 hover:underline">Change Password</a>
+                </li>
+            </ul>
+        </div>
+    </div>
+</div>
 {% endblock %}

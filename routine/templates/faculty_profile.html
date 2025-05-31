@@ -1,6 +1,111 @@
 {% extends 'base.html' %}
+{% load static %}
 {% block title %}Faculty Profile{% endblock %}
 {% block content %}
-<h2 class="text-xl font-semibold">Welcome, {{ request.user.username }}</h2>
-<p>This is your faculty profile page.</p>
+<div class="container mx-auto px-4 py-8">
+    <!-- Profile Header Section -->
+    <div class="bg-white/80 shadow-md rounded-lg p-6">
+        <div class="flex items-center space-x-4">
+            <!-- Profile Picture -->
+            <div class="w-20 h-20 bg-gray-300 rounded-full flex-shrink-0">
+                {% if faculty.picture %}
+                    <img src="{{ faculty.picture.url }}" alt="Faculty Picture" class="w-full h-full rounded-full object-cover">
+                {% else %}
+                    <img src="{% static 'img/default-avatar.jpg' %}" alt="Faculty Picture" class="w-full h-full rounded-full object-cover">
+                {% endif %}
+            </div>
+            <!-- Profile Info -->
+            <div>
+                <h2 class="text-2xl font-semibold text-gray-800">Welcome, {{ faculty.name }}</h2>
+                <p class="text-gray-600">Faculty Code: {{ faculty.faculty_code }}</p>
+                <p class="text-gray-600">Position: {{ faculty.get_position_display }}</p>
+                <p class="text-gray-600">Department: {{ faculty.get_department_display }}</p>
+            </div>
+        </div>
+    </div>
+
+    <!-- Profile Details Section -->
+    <div class="mt-6 grid grid-cols-1 md:grid-cols-2 gap-6">
+        <!-- Personal Information -->
+        <div class="bg-white/80 shadow-md rounded-lg p-6">
+            <h3 class="text-xl font-semibold text-gray-800 mb-4">Personal Information</h3>
+            <ul class="space-y-4">
+                <li class="flex justify-between text-gray-700">
+                    <span class="font-medium">Name:</span>
+                    <span>{{ faculty.name }}</span>
+                </li>
+                <li class="flex justify-between text-gray-700">
+                    <span class="font-medium">Faculty Code:</span>
+                    <span>{{ faculty.faculty_code }}</span>
+                </li>
+                <li class="flex justify-between text-gray-700">
+                    <span class="font-medium">Email:</span>
+                    <span>{{ faculty.email }}</span>
+                </li>
+                <li class="flex justify-between text-gray-700">
+                    <span class="font-medium">Position:</span>
+                    <span>{{ faculty.get_position_display }}</span>
+                </li>
+                <li class="flex justify-between text-gray-700">
+                    <span class="font-medium">Department:</span>
+                    <span>{{ faculty.get_department_display }}</span>
+                </li>
+                <li class="flex justify-between text-gray-700">
+                    <span class="font-medium">Office Building:</span>
+                    <span>{{ faculty.get_office_building_display }}</span>
+                </li>
+                <li class="flex justify-between text-gray-700">
+                    <span class="font-medium">Room Name:</span>
+                    <span>{{ faculty.room_name }}</span>
+                </li>
+            </ul>
+        </div>
+
+        <!-- Academic & Professional Information -->
+        <div class="bg-white/80 shadow-md rounded-lg p-6">
+            <h3 class="text-xl font-semibold text-gray-800 mb-4">
+                Academic & Professional Information
+            </h3>
+            <ul class="space-y-6">
+                <li class="flex flex-col md:flex-row md:items-start text-gray-700">
+                    <span class="font-medium w-full md:w-1/4 mb-2 md:mb-0">
+                        Academic Background:
+                    </span>
+                    <div class="w-full md:w-3/4 text-gray-700 break-words">
+                        <span class="whitespace-pre-wrap">{{ faculty.academic_background|linebreaksbr }}</span>
+                    </div>
+                </li>
+                <li class="flex flex-col md:flex-row md:items-start text-gray-700">
+                    <span class="font-medium w-full md:w-1/4 mb-2 md:mb-0">
+                        Experience:
+                    </span>
+                    <div class="w-full md:w-3/4 text-gray-700 break-words">
+                        <span class="whitespace-pre-wrap">{{ faculty.experience|linebreaksbr }}</span>
+                    </div>
+                </li>
+                <li class="flex flex-col md:flex-row md:items-start text-gray-700">
+                    <span class="font-medium w-full md:w-1/4 mb-2 md:mb-0">
+                        Biography:
+                    </span>
+                    <div class="w-full md:w-3/4 text-gray-700 break-words">
+                        <span class="whitespace-pre-wrap">{{ faculty.biography|linebreaksbr }}</span>
+                    </div>
+                </li>
+            </ul>
+        </div>
+
+        <div class="bg-white shadow-md rounded-lg p-6">
+            <h3 class="text-xl font-semibold text-gray-800 mb-4">Account Settings</h3>
+            <ul class="space-y-4">
+                <li>
+                    <a href="/" class="text-blue-600 hover:underline">Change Password</a>
+                </li>
+            </ul>
+        </div>
+
+
+
+
+    </div>
+</div>
 {% endblock %}
