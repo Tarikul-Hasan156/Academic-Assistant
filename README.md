@@ -97,7 +97,9 @@ Academic-Assistant/
 📫 [GitHub Profile](https://github.com/Tarikul-Hasan156)  
 🎓 BUBT — Department of CSE  
 
----
+**Shahriya Naeem**  
+📫 [GitHub Profile](https://github.com/snrredoy)  
+🎓 BUBT — Department of CSE 
 
 ## 📄 License
 
