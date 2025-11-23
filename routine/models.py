@@ -25,6 +25,8 @@ class Student(models.Model):
     user = models.OneToOneField(User, on_delete=models.CASCADE, null=True, blank=True)
     student_name = models.CharField(max_length=100, blank=True, null=True)
     student_id = models.CharField(max_length=20, unique=True, blank=True, null=True)
+    email = models.EmailField(unique=True, blank=True, null=True)
+    picture = models.ImageField(upload_to='student_pics/', blank=True, null=True)
     department = models.CharField(max_length=100, choices=DEPARTMENT_CHOICES, blank=True, null=True)
     intake = models.IntegerField(blank=True, null=True)
     section = models.CharField(max_length=10, blank=True, null=True)
@@ -92,7 +94,7 @@ class Faculty(models.Model):
 
 
 class ClassRoutine(models.Model):
-    # Department choices – reuse from Student model if you want
+   
     DEPARTMENT_CHOICES = [
         ('EEE', 'EEE'),
         ('CSE', 'CSE'),
@@ -154,12 +156,10 @@ class ClassRoutine(models.Model):
     room_no = models.CharField(max_length=10, blank=True, null=True)
 
     def clean(self):
-        # Ensure faculty_code exists in Faculty
+      
         if self.faculty_code and not Faculty.objects.filter(faculty_code=self.faculty_code).exists():
             from django.core.exceptions import ValidationError
             raise ValidationError({'faculty_code': 'Faculty code does not exist.'})
-
-        # Ensure intake and section match an existing student
         if self.intake and self.section:
             from django.core.exceptions import ValidationError
             if not Student.objects.filter(intake=self.intake, section=self.section).exists():

@@ -1,83 +1,171 @@
 {% extends 'base.html' %}
 {% block title %}Student Registration{% endblock %}
 {% block content %}
-<div class="max-w-xl mx-auto mt-10 bg-white/80 p-8 rounded-2xl shadow">
-    <h2 class="text-2xl font-bold mb-6 text-center text-blue-600">Student Registration</h2>
-
-    {% if messages %}
-        <div id="message-container" class="mb-4">
-            {% for message in messages %}
-                <div class="p-3 rounded text-white mb-2 transition-opacity duration-500
-                    {% if message.tags == 'error' %}bg-red-500
-                    {% elif message.tags == 'success' %}bg-green-500
-                    {% else %}bg-blue-500{% endif %}">
-                    {{ message }}
+<div class="flex items-center justify-center min-h-screen py-12 px-4">
+    <div class="w-full max-w-lg">
+        <!-- Card -->
+        <div class="bg-white rounded-2xl shadow-2xl overflow-hidden border-t-4 border-blue-600">
+            <!-- Header -->
+            <div class="bg-gradient-to-r from-blue-600 to-blue-700 p-8 text-white">
+                <div class="flex justify-center mb-4">
+                    <div class="w-16 h-16 bg-white rounded-full flex items-center justify-center">
+                        <i class="fas fa-user-graduate text-3xl text-blue-600"></i>
+                    </div>
                 </div>
-            {% endfor %}
+                <h2 class="text-3xl font-bold text-center">Student Registration</h2>
+                <p class="text-blue-100 text-center mt-2">Create your academic account</p>
+            </div>
+
+            <!-- Messages -->
+            {% if messages %}
+                <div class="px-6 pt-6">
+                    {% for message in messages %}
+                        <div class="p-4 rounded-lg text-white mb-4 flex items-center space-x-3
+                            {% if message.tags == 'error' %}bg-red-500
+                            {% elif message.tags == 'success' %}bg-green-500
+                            {% else %}bg-blue-500{% endif %}">
+                            {% if message.tags == 'error' %}
+                                <i class="fas fa-exclamation-circle flex-shrink-0"></i>
+                            {% elif message.tags == 'success' %}
+                                <i class="fas fa-check-circle flex-shrink-0"></i>
+                            {% else %}
+                                <i class="fas fa-info-circle flex-shrink-0"></i>
+                            {% endif %}
+                            <span>{{ message }}</span>
+                        </div>
+                    {% endfor %}
+                </div>
+            {% endif %}
+
+            <!-- Form -->
+            <form method="POST" enctype="multipart/form-data" class="p-8 space-y-4">
+                {% csrf_token %}
+
+                <div>
+                    <label class="block text-sm font-bold text-slate-700 mb-2">
+                        <i class="fas fa-user text-blue-600 mr-2"></i>Full Name
+                    </label>
+                    <input type="text" name="student_name" placeholder="Enter your full name" required
+                        class="w-full px-4 py-3 border-2 border-slate-300 rounded-lg focus:outline-none focus:border-blue-600 focus:ring-2 focus:ring-blue-100 transition">
+                </div>
+
+                <div>
+                    <label class="block text-sm font-bold text-slate-700 mb-2">
+                        <i class="fas fa-id-card text-blue-600 mr-2"></i>Student ID
+                    </label>
+                    <input type="text" name="student_id" placeholder="Enter your Student ID" required
+                        class="w-full px-4 py-3 border-2 border-slate-300 rounded-lg focus:outline-none focus:border-blue-600 focus:ring-2 focus:ring-blue-100 transition">
+                </div>
+
+                <div>
+                    <label class="block text-sm font-bold text-slate-700 mb-2">
+                        <i class="fas fa-envelope text-blue-600 mr-2"></i>Email Address
+                    </label>
+                    <input type="email" name="email" placeholder="Enter your email address" required
+                        class="w-full px-4 py-3 border-2 border-slate-300 rounded-lg focus:outline-none focus:border-blue-600 focus:ring-2 focus:ring-blue-100 transition">
+                </div>
+
+                <div>
+                    <label class="block text-sm font-bold text-slate-700 mb-2\">\
+                        <i class="fas fa-building text-blue-600 mr-2"></i>Department
+                    </label>
+                    <select name="department" required
+                        class="w-full px-4 py-3 border-2 border-slate-300 rounded-lg focus:outline-none focus:border-blue-600 focus:ring-2 focus:ring-blue-100 transition">
+                        <option value="" disabled selected>Select Department</option>
+                        <option value="EEE">EEE</option>
+                        <option value="CSE">CSE</option>
+                        <option value="BBA">BBA</option>
+                        <option value="CIVIL">CIVIL</option>
+                        <option value="Economics">Economics</option>
+                        <option value="English">English</option>
+                    </select>
+                </div>
+
+                <div class="grid grid-cols-2 gap-4">
+                    <div>
+                        <label class="block text-sm font-bold text-slate-700 mb-2">
+                            <i class="fas fa-calendar text-blue-600 mr-2"></i>Intake
+                        </label>
+                        <input type="number" name="intake" placeholder="Intake" required
+                            class="w-full px-4 py-3 border-2 border-slate-300 rounded-lg focus:outline-none focus:border-blue-600 focus:ring-2 focus:ring-blue-100 transition">
+                    </div>
+                    <div>
+                        <label class="block text-sm font-bold text-slate-700 mb-2">
+                            <i class="fas fa-layer-group text-blue-600 mr-2"></i>Section
+                        </label>
+                        <input type="text" name="section" placeholder="Section" required
+                            class="w-full px-4 py-3 border-2 border-slate-300 rounded-lg focus:outline-none focus:border-blue-600 focus:ring-2 focus:ring-blue-100 transition">
+                    </div>
+                </div>
+
+                <div>
+                    <label class="block text-sm font-bold text-slate-700 mb-2">
+                        <i class="fas fa-droplet text-red-600 mr-2"></i>Blood Group
+                    </label>
+                    <select name="blood_group" required
+                        class="w-full px-4 py-3 border-2 border-slate-300 rounded-lg focus:outline-none focus:border-blue-600 focus:ring-2 focus:ring-blue-100 transition">
+                        <option value="" disabled selected>Select Blood Group</option>
+                        <option value="A+">A+</option>
+                        <option value="A-">A-</option>
+                        <option value="B+">B+</option>
+                        <option value="B-">B-</option>
+                        <option value="O+">O+</option>
+                        <option value="O-">O-</option>
+                        <option value="AB+">AB+</option>
+                        <option value="AB-">AB-</option>
+                    </select>
+                </div>
+
+                <div>
+                    <label class="block text-sm font-bold text-slate-700 mb-2">
+                        <i class="fas fa-image text-blue-600 mr-2"></i>Profile Picture (Optional)
+                    </label>
+                    <input type="file" name="picture" accept="image/*"
+                        class="w-full px-4 py-3 border-2 border-slate-300 rounded-lg focus:outline-none focus:border-blue-600 focus:ring-2 focus:ring-blue-100 transition">
+                    <p class="text-xs text-slate-500 mt-2">Upload a profile picture (optional)</p>
+                </div>
+
+                <div>
+                    <label class="block text-sm font-bold text-slate-700 mb-2">
+                        <i class="fas fa-lock text-blue-600 mr-2"></i>Password
+                    </label>
+                    <input type="password" name="password1" placeholder="Create a password" required
+                        class="w-full px-4 py-3 border-2 border-slate-300 rounded-lg focus:outline-none focus:border-blue-600 focus:ring-2 focus:ring-blue-100 transition">
+                </div>
+
+                <div>
+                    <label class="block text-sm font-bold text-slate-700 mb-2">
+                        <i class="fas fa-lock text-blue-600 mr-2"></i>Confirm Password
+                    </label>
+                    <input type="password" name="password2" placeholder="Confirm your password" required
+                        class="w-full px-4 py-3 border-2 border-slate-300 rounded-lg focus:outline-none focus:border-blue-600 focus:ring-2 focus:ring-blue-100 transition">
+                </div>
+
+                <button type="submit" class="w-full bg-gradient-to-r from-blue-600 to-blue-700 hover:from-blue-700 hover:to-blue-800 text-white font-bold py-3 rounded-lg transition transform hover:scale-105 flex items-center justify-center space-x-2 mt-6">
+                    <i class="fas fa-user-plus"></i>
+                    <span>Register</span>
+                </button>
+            </form>
+
+            <!-- Footer -->
+            <div class="bg-slate-50 px-8 py-6 border-t border-slate-200">
+                <p class="text-slate-600 text-center text-sm">
+                    Already have an account? 
+                    <a href="{% url 'student-login' %}" class="text-blue-600 hover:text-blue-700 font-bold">
+                        Login here
+                    </a>
+                </p>
+            </div>
         </div>
-    {% endif %}
-
-    <form method="POST" class="space-y-5">
-        {% csrf_token %}
-
-        <input type="text" name="student_name" placeholder="Full Name" required
-            class="w-full px-4 py-2 border border-gray-300 rounded focus:outline-none focus:ring-2 focus:ring-blue-400">
-
-        <input type="text" name="student_id" placeholder="Student ID" required
-            class="w-full px-4 py-2 border border-gray-300 rounded focus:outline-none focus:ring-2 focus:ring-blue-400">
-
-        <select name="department" required
-            class="w-full px-4 py-2 border border-gray-300 rounded focus:outline-none focus:ring-2 focus:ring-blue-400">
-            <option value="" disabled selected>Select Department</option>
-            <option value="EEE">EEE</option>
-            <option value="CSE">CSE</option>
-            <option value="BBA">BBA</option>
-            <option value="CIVIL">CIVIL</option>
-            <option value="Economics">Economics</option>
-            <option value="English">English</option>
-        </select>
-
-        <div class="grid grid-cols-2 gap-4">
-            <input type="number" name="intake" placeholder="Intake" required
-                class="w-full px-4 py-2 border border-gray-300 rounded focus:outline-none focus:ring-2 focus:ring-blue-400">
-
-            <input type="text" name="section" placeholder="Section" required
-                class="w-full px-4 py-2 border border-gray-300 rounded focus:outline-none focus:ring-2 focus:ring-blue-400">
-        </div>
-
-        <select name="blood_group" required
-            class="w-full px-4 py-2 border border-gray-300 rounded focus:outline-none focus:ring-2 focus:ring-blue-400">
-            <option value="" disabled selected>Select Blood Group</option>
-            <option value="A+">A+</option>
-            <option value="A-">A-</option>
-            <option value="B+">B+</option>
-            <option value="B-">B-</option>
-            <option value="O+">O+</option>
-            <option value="O-">O-</option>
-            <option value="AB+">AB+</option>
-            <option value="AB-">AB-</option>
-        </select>
-
-        <input type="password" name="password1" placeholder="Password" required
-            class="w-full px-4 py-2 border border-gray-300 rounded focus:outline-none focus:ring-2 focus:ring-blue-400">
-
-        <input type="password" name="password2" placeholder="Confirm Password" required
-            class="w-full px-4 py-2 border border-gray-300 rounded focus:outline-none focus:ring-2 focus:ring-blue-400">
-
-        <button type="submit"
-            class="w-full bg-blue-600 text-white py-2 px-4 rounded hover:bg-blue-700 transition">
-            Register
-        </button>
-    </form>
+    </div>
 </div>
-
 
 <script>
     setTimeout(() => {
-        const container = document.getElementById('message-container');
-        if (container) {
-            container.style.opacity = '0';
-            setTimeout(() => container.remove(), 500);
+        const container = document.querySelector('[role="alert"]');
+        if (container && container.parentElement) {
+            container.parentElement.style.opacity = '0';
+            setTimeout(() => container.parentElement.remove(), 500);
         }
     }, 5000);
 </script>

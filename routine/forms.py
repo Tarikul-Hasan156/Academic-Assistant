@@ -8,6 +8,8 @@ class StudentRegisterForm(forms.ModelForm):
     password2 = forms.CharField(widget=forms.PasswordInput)
 
     class Meta:
+
+        
         model = Student
         fields = ['student_name', 'student_id', 'department', 'intake', 'section', 'blood_group']
 

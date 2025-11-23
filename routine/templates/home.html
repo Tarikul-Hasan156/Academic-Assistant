@@ -1,0 +1,151 @@
+{% extends 'base.html' %}
+{% block title %}Home - Academic Assistant{% endblock %}
+
+{% block content %}
+<!-- Hero Section - Full Screen -->
+<div class="fixed inset-0 top-16 bg-gradient-to-br from-slate-900 via-blue-900 to-slate-900 text-white flex items-center justify-center px-4 overflow-hidden">
+    <div class="container mx-auto w-full">
+        <div class="grid grid-cols-1 lg:grid-cols-2 gap-8 items-center">
+            <!-- Left Side: Content -->
+            <div class="space-y-6">
+                <div class="space-y-3">
+                    <span class="inline-block bg-blue-500 bg-opacity-20 border border-blue-400 text-blue-300 px-4 py-2 rounded-full text-sm font-semibold">
+                        <i class="fas fa-star text-yellow-400 mr-2"></i>Welcome to Academic Assistant
+                    </span>
+                    <h1 class="text-4xl lg:text-5xl font-bold leading-tight">
+                        Manage Your <span class="bg-gradient-to-r from-blue-400 to-cyan-300 bg-clip-text text-transparent">Academic Life</span> with Ease
+                    </h1>
+                    <p class="text-lg text-gray-300 leading-relaxed">
+                        The complete platform for students and faculty to search profiles, view class routines, and manage academic information seamlessly.
+                    </p>
+                </div>
+
+                <!-- CTA Buttons -->
+                <div class="flex flex-col sm:flex-row gap-4 pt-2">
+                    <a href="{% url 'student-login' %}" class="inline-flex items-center justify-center bg-gradient-to-r from-blue-600 to-blue-700 hover:from-blue-700 hover:to-blue-800 text-white px-8 py-3 rounded-lg font-bold transition transform hover:scale-105 shadow-lg text-sm">
+                        <i class="fas fa-book-reader mr-2"></i>
+                        Student Portal
+                    </a>
+                    <a href="{% url 'faculty-login' %}" class="inline-flex items-center justify-center bg-gradient-to-r from-green-600 to-green-700 hover:from-green-700 hover:to-green-800 text-white px-8 py-3 rounded-lg font-bold transition transform hover:scale-105 shadow-lg text-sm">
+                        <i class="fas fa-chalkboard-user mr-2"></i>
+                        Faculty Portal
+                    </a>
+                </div>
+
+                <!-- Features List -->
+                <div class="grid grid-cols-1 sm:grid-cols-2 gap-3 pt-4">
+                    <div class="flex items-start space-x-2">
+                        <div class="w-8 h-8 bg-green-500 rounded-lg flex items-center justify-center flex-shrink-0">
+                            <i class="fas fa-check text-white text-xs"></i>
+                        </div>
+                        <div>
+                            <h3 class="font-bold text-sm">Student Profiles</h3>
+                            <p class="text-gray-300 text-xs">Search and view student information</p>
+                        </div>
+                    </div>
+                    <div class="flex items-start space-x-2">
+                        <div class="w-8 h-8 bg-blue-500 rounded-lg flex items-center justify-center flex-shrink-0">
+                            <i class="fas fa-check text-white text-xs"></i>
+                        </div>
+                        <div>
+                            <h3 class="font-bold text-sm">Faculty Directory</h3>
+                            <p class="text-gray-300 text-xs">Find faculty members and details</p>
+                        </div>
+                    </div>
+                    <div class="flex items-start space-x-2">
+                        <div class="w-8 h-8 bg-purple-500 rounded-lg flex items-center justify-center flex-shrink-0">
+                            <i class="fas fa-check text-white text-xs"></i>
+                        </div>
+                        <div>
+                            <h3 class="font-bold text-sm">Class Routines</h3>
+                            <p class="text-gray-300 text-xs">View schedule and timetables</p>
+                        </div>
+                    </div>
+                    <div class="flex items-start space-x-2">
+                        <div class="w-8 h-8 bg-orange-500 rounded-lg flex items-center justify-center flex-shrink-0">
+                            <i class="fas fa-check text-white text-xs"></i>
+                        </div>
+                        <div>
+                            <h3 class="font-bold text-sm">Secure Access</h3>
+                            <p class="text-gray-300 text-xs">Protected with authentication</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Right Side: Illustration -->
+            <div class="hidden lg:flex items-center justify-center">
+                <div class="relative w-full max-w-sm">
+                    <!-- Floating Background Elements -->
+                    <div class="absolute inset-0 bg-gradient-to-br from-blue-500 to-cyan-400 rounded-3xl blur-3xl opacity-20 animate-pulse"></div>
+                    
+                    <!-- Main Card -->
+                    <div class="relative bg-gradient-to-br from-slate-800 to-slate-900 rounded-3xl p-6 shadow-2xl border border-blue-500 border-opacity-20 backdrop-blur-sm">
+                        <div class="space-y-4">
+                            <!-- Card Header -->
+                            <div class="text-center">
+                                <div class="w-16 h-16 bg-gradient-to-br from-blue-500 to-cyan-400 rounded-full flex items-center justify-center mx-auto mb-3 shadow-lg">
+                                    <i class="fas fa-graduation-cap text-white text-2xl"></i>
+                                </div>
+                                <h3 class="text-xl font-bold">Academic System</h3>
+                                <p class="text-gray-400 text-xs mt-1">All-in-one platform</p>
+                            </div>
+
+                            <!-- Stats -->
+                            <div class="space-y-3 pt-4 border-t border-slate-700">
+                                <div class="flex justify-between items-center">
+                                    <span class="text-gray-400 text-xs">Student Database</span>
+                                    <div class="flex items-center space-x-2">
+                                        <div class="w-24 h-2 bg-slate-700 rounded-full overflow-hidden">
+                                            <div class="w-4/5 h-full bg-gradient-to-r from-blue-500 to-cyan-400"></div>
+                                        </div>
+                                        <span class="text-xs font-bold text-cyan-300">100%</span>
+                                    </div>
+                                </div>
+                                <div class="flex justify-between items-center">
+                                    <span class="text-gray-400 text-xs">Faculty Records</span>
+                                    <div class="flex items-center space-x-2">
+                                        <div class="w-24 h-2 bg-slate-700 rounded-full overflow-hidden">
+                                            <div class="w-5/6 h-full bg-gradient-to-r from-green-500 to-emerald-400"></div>
+                                        </div>
+                                        <span class="text-xs font-bold text-emerald-300">95%</span>
+                                    </div>
+                                </div>
+                                <div class="flex justify-between items-center">
+                                    <span class="text-gray-400 text-xs">Class Schedules</span>
+                                    <div class="flex items-center space-x-2">
+                                        <div class="w-24 h-2 bg-slate-700 rounded-full overflow-hidden">
+                                            <div class="w-3/4 h-full bg-gradient-to-r from-purple-500 to-violet-400"></div>
+                                        </div>
+                                        <span class="text-xs font-bold text-violet-300">98%</span>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <!-- Features Grid -->
+                            <div class="grid grid-cols-2 gap-2 pt-4 border-t border-slate-700">
+                                <div class="bg-blue-500 bg-opacity-10 border border-blue-500 border-opacity-30 rounded-lg p-2 text-center">
+                                    <i class="fas fa-users text-blue-400 text-sm mb-1"></i>
+                                    <p class="text-xs text-gray-300 font-semibold">Student Search</p>
+                                </div>
+                                <div class="bg-green-500 bg-opacity-10 border border-green-500 border-opacity-30 rounded-lg p-2 text-center">
+                                    <i class="fas fa-chalkboard-user text-green-400 text-sm mb-1"></i>
+                                    <p class="text-xs text-gray-300 font-semibold">Faculty Info</p>
+                                </div>
+                                <div class="bg-purple-500 bg-opacity-10 border border-purple-500 border-opacity-30 rounded-lg p-2 text-center">
+                                    <i class="fas fa-calendar text-purple-400 text-sm mb-1"></i>
+                                    <p class="text-xs text-gray-300 font-semibold">Routines</p>
+                                </div>
+                                <div class="bg-orange-500 bg-opacity-10 border border-orange-500 border-opacity-30 rounded-lg p-2 text-center">
+                                    <i class="fas fa-lock text-orange-400 text-sm mb-1"></i>
+                                    <p class="text-xs text-gray-300 font-semibold">Secure</p>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

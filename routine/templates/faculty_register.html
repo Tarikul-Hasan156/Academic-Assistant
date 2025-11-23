@@ -2,80 +2,203 @@
 {% block title %}Faculty Registration{% endblock %}
 
 {% block content %}
-<div class="max-w-xl mx-auto mt-10 bg-white/80 p-8 rounded-2xl shadow">
-    <h2 class="text-2xl font-bold mb-6 text-center text-blue-600">Faculty Registration</h2>
-
-    {% if messages %}
-        <div id="message-container" class="mb-4">
-            {% for message in messages %}
-                <div class="p-3 rounded text-white mb-2 transition-opacity duration-500
-                    {% if message.tags == 'error' %}bg-red-500
-                    {% elif message.tags == 'success' %}bg-green-500
-                    {% else %}bg-blue-500{% endif %}">
-                    {{ message }}
+<div class="flex items-center justify-center min-h-screen py-12 px-4">
+    <div class="w-full max-w-2xl">
+        <!-- Card -->
+        <div class="bg-white rounded-2xl shadow-2xl overflow-hidden border-t-4 border-green-600">
+            <!-- Header -->
+            <div class="bg-gradient-to-r from-green-600 to-green-700 p-8 text-white">
+                <div class="flex justify-center mb-4">
+                    <div class="w-16 h-16 bg-white rounded-full flex items-center justify-center">
+                        <i class="fas fa-chalkboard-user text-3xl text-green-600"></i>
+                    </div>
                 </div>
-            {% endfor %}
+                <h2 class="text-3xl font-bold text-center">Faculty Registration</h2>
+                <p class="text-green-100 text-center mt-2">Join the Academic Assistant platform</p>
+            </div>
+
+            <!-- Messages -->
+            {% if messages %}
+                <div class="px-6 pt-6">
+                    {% for message in messages %}
+                        <div class="p-4 rounded-lg text-white mb-4 flex items-center space-x-3
+                            {% if message.tags == 'error' %}bg-red-500
+                            {% elif message.tags == 'success' %}bg-green-500
+                            {% else %}bg-blue-500{% endif %}">
+                            {% if message.tags == 'error' %}
+                                <i class="fas fa-exclamation-circle flex-shrink-0"></i>
+                            {% elif message.tags == 'success' %}
+                                <i class="fas fa-check-circle flex-shrink-0"></i>
+                            {% else %}
+                                <i class="fas fa-info-circle flex-shrink-0"></i>
+                            {% endif %}
+                            <span>{{ message }}</span>
+                        </div>
+                    {% endfor %}
+                </div>
+            {% endif %}
+
+            <!-- Form -->
+            <form method="POST" enctype="multipart/form-data" class="p-8 space-y-4">
+                {% csrf_token %}
+
+                <!-- Account Information Section -->
+                <h3 class="text-lg font-bold text-slate-900 mb-4 pt-4 border-t border-slate-200 flex items-center space-x-2">
+                    <i class="fas fa-lock text-green-600"></i>
+                    <span>Account Information</span>
+                </h3>
+
+                <div>
+                    <label class="block text-sm font-bold text-slate-700 mb-2">
+                        <i class="fas fa-user text-green-600 mr-2"></i>Full Name
+                    </label>
+                    <input type="text" name="name" placeholder="Enter your full name" required
+                        class="w-full px-4 py-3 border-2 border-slate-300 rounded-lg focus:outline-none focus:border-green-600 focus:ring-2 focus:ring-green-100 transition">
+                </div>
+
+                <div>
+                    <label class="block text-sm font-bold text-slate-700 mb-2">
+                        <i class="fas fa-envelope text-green-600 mr-2"></i>Email Address
+                    </label>
+                    <input type="email" name="email" placeholder="Enter your email" required
+                        class="w-full px-4 py-3 border-2 border-slate-300 rounded-lg focus:outline-none focus:border-green-600 focus:ring-2 focus:ring-green-100 transition">
+                </div>
+
+                <div class="grid grid-cols-2 gap-4">
+                    <div>
+                        <label class="block text-sm font-bold text-slate-700 mb-2">
+                            <i class="fas fa-lock text-green-600 mr-2"></i>Password
+                        </label>
+                        <input type="password" name="password1" placeholder="Create password" required
+                            class="w-full px-4 py-3 border-2 border-slate-300 rounded-lg focus:outline-none focus:border-green-600 focus:ring-2 focus:ring-green-100 transition">
+                    </div>
+                    <div>
+                        <label class="block text-sm font-bold text-slate-700 mb-2">
+                            <i class="fas fa-lock text-green-600 mr-2"></i>Confirm Password
+                        </label>
+                        <input type="password" name="password2" placeholder="Confirm password" required
+                            class="w-full px-4 py-3 border-2 border-slate-300 rounded-lg focus:outline-none focus:border-green-600 focus:ring-2 focus:ring-green-100 transition">
+                    </div>
+                </div>
+
+                <!-- Profile Information Section -->
+                <h3 class="text-lg font-bold text-slate-900 mb-4 pt-4 border-t border-slate-200 flex items-center space-x-2">
+                    <i class="fas fa-briefcase text-green-600"></i>
+                    <span>Profile Information</span>
+                </h3>
+
+                <div class="grid grid-cols-2 gap-4">
+                    <div>
+                        <label class="block text-sm font-bold text-slate-700 mb-2">Department</label>
+                        <select name="department" required
+                            class="w-full px-4 py-3 border-2 border-slate-300 rounded-lg focus:outline-none focus:border-green-600 focus:ring-2 focus:ring-green-100 transition">
+                            <option value="" disabled selected>Select</option>
+                            <option value="EEE">EEE</option>
+                            <option value="CSE">CSE</option>
+                            <option value="BBA">BBA</option>
+                            <option value="MATH">MATH</option>
+                            <option value="CIVIL">CIVIL</option>
+                            <option value="Economics">Economics</option>
+                            <option value="English">English</option>
+                        </select>
+                    </div>
+                    <div>
+                        <label class="block text-sm font-bold text-slate-700 mb-2">Position</label>
+                        <select name="position" required
+                            class="w-full px-4 py-3 border-2 border-slate-300 rounded-lg focus:outline-none focus:border-green-600 focus:ring-2 focus:ring-green-100 transition">
+                            <option value="" disabled selected>Select</option>
+                            <option value="Lecturer">Lecturer</option>
+                            <option value="Assistant Professor">Assistant Professor</option>
+                            <option value="Professor">Professor</option>
+                            <option value="Chairman">Chairman</option>
+                            <option value="Vice-Chancellor">Vice-Chancellor</option>
+                            <option value="Dean">Dean</option>
+                        </select>
+                    </div>
+                </div>
+
+                <div class="grid grid-cols-2 gap-4">
+                    <div>
+                        <label class="block text-sm font-bold text-slate-700 mb-2">Office Building</label>
+                        <select name="office_building" required
+                            class="w-full px-4 py-3 border-2 border-slate-300 rounded-lg focus:outline-none focus:border-green-600 focus:ring-2 focus:ring-green-100 transition">
+                            <option value="" disabled selected>Select</option>
+                            <option value="B-1">B-1</option>
+                            <option value="B-2">B-2</option>
+                            <option value="B-3">B-3</option>
+                            <option value="B-4">B-4</option>
+                        </select>
+                    </div>
+                    <div>
+                        <label class="block text-sm font-bold text-slate-700 mb-2">Room Name</label>
+                        <input type="text" name="room_name" placeholder="Room name" required
+                            class="w-full px-4 py-3 border-2 border-slate-300 rounded-lg focus:outline-none focus:border-green-600 focus:ring-2 focus:ring-green-100 transition">
+                    </div>
+                </div>
+
+                <div>
+                    <label class="block text-sm font-bold text-slate-700 mb-2">Faculty Code</label>
+                    <input type="text" name="faculty_code" placeholder="Enter faculty code" required
+                        class="w-full px-4 py-3 border-2 border-slate-300 rounded-lg focus:outline-none focus:border-green-600 focus:ring-2 focus:ring-green-100 transition">
+                </div>
+
+                <div>
+                    <label class="block text-sm font-bold text-slate-700 mb-2">
+                        <i class="fas fa-image text-green-600 mr-2"></i>Profile Picture
+                    </label>
+                    <input type="file" name="picture" accept="image/*"
+                        class="w-full px-4 py-3 border-2 border-slate-300 rounded-lg focus:outline-none focus:border-green-600 focus:ring-2 focus:ring-green-100 transition">
+                </div>
+
+                <!-- Additional Information Section -->
+                <h3 class="text-lg font-bold text-slate-900 mb-4 pt-4 border-t border-slate-200 flex items-center space-x-2">
+                    <i class="fas fa-book text-green-600"></i>
+                    <span>Additional Information</span>
+                </h3>
+
+                <div>
+                    <label class="block text-sm font-bold text-slate-700 mb-2">Academic Background</label>
+                    <textarea name="academic_background" placeholder="Enter your academic background" required
+                        class="w-full px-4 py-3 border-2 border-slate-300 rounded-lg focus:outline-none focus:border-green-600 focus:ring-2 focus:ring-green-100 transition h-24 resize-none"></textarea>
+                </div>
+
+                <div>
+                    <label class="block text-sm font-bold text-slate-700 mb-2">Experience</label>
+                    <textarea name="experience" placeholder="Enter your professional experience" required
+                        class="w-full px-4 py-3 border-2 border-slate-300 rounded-lg focus:outline-none focus:border-green-600 focus:ring-2 focus:ring-green-100 transition h-24 resize-none"></textarea>
+                </div>
+
+                <div>
+                    <label class="block text-sm font-bold text-slate-700 mb-2">Biography</label>
+                    <textarea name="biography" placeholder="Enter your biography" required
+                        class="w-full px-4 py-3 border-2 border-slate-300 rounded-lg focus:outline-none focus:border-green-600 focus:ring-2 focus:ring-green-100 transition h-24 resize-none"></textarea>
+                </div>
+
+                <button type="submit" class="w-full bg-gradient-to-r from-green-600 to-green-700 hover:from-green-700 hover:to-green-800 text-white font-bold py-3 rounded-lg transition transform hover:scale-105 flex items-center justify-center space-x-2 mt-6">
+                    <i class="fas fa-user-check"></i>
+                    <span>Register</span>
+                </button>
+            </form>
+
+            <!-- Footer -->
+            <div class="bg-slate-50 px-8 py-6 border-t border-slate-200">
+                <p class="text-slate-600 text-center text-sm">
+                    Already have an account? 
+                    <a href="{% url 'faculty-login' %}" class="text-green-600 hover:text-green-700 font-bold">
+                        Login here
+                    </a>
+                </p>
+            </div>
         </div>
-    {% endif %}
-
-    <form method="POST" enctype="multipart/form-data" class="space-y-4">
-        {% csrf_token %}
-        <input type="text" name="name" placeholder="Full Name" class="w-full p-2 border rounded" required>
-        <input type="email" name="email" placeholder="Email" class="w-full p-2 border rounded" required>
-        <input type="password" name="password1" placeholder="Password" class="w-full p-2 border rounded" required>
-        <input type="password" name="password2" placeholder="Confirm Password" class="w-full p-2 border rounded" required>
-
-        <h3 class="text-lg font-semibold mt-6 mb-2 text-gray-700 border-b pb-1">Profile Information</h3>
-
-        <select name="department" class="w-full p-2 border rounded" required>
-            <option value="" disabled selected>Select Department</option>
-            <option value="EEE">EEE</option>
-            <option value="CSE">CSE</option>
-            <option value="BBA">BBA</option>
-            <option value="MATH">MATH</option>
-            <option value="CIVIL">CIVIL</option>
-            <option value="Economics">Economics</option>
-            <option value="English">English</option>
-        </select>
-
-        <select name="position" class="w-full p-2 border rounded" required>
-            <option value="" disabled selected>Select Position</option>
-            <option value="Lecturer">Lecturer</option>
-            <option value="Assistant Professor">Assistant Professor</option>
-            <option value="Professor">Professor</option>
-            <option value="Chairman">Chairman</option>
-            <option value="Vice-Chancellor">Vice-Chancellor</option>
-            <option value="Dean">Dean</option>
-        </select>
-
-        <select name="office_building" class="w-full p-2 border rounded" required>
-            <option value="" disabled selected>Select Building</option>
-            <option value="B-1">B-1</option>
-            <option value="B-2">B-2</option>
-            <option value="B-3">B-3</option>
-            <option value="B-4">B-4</option>
-        </select>
-
-        <input type="text" name="room_name" placeholder="Room Name" class="w-full p-2 border rounded" required>
-        <input type="text" name="faculty_code" placeholder="Faculty Code" class="w-full p-2 border rounded" required>
-        <input type="file" name="picture" class="w-full p-2 border rounded">
-
-        <textarea name="academic_background" placeholder="Academic Background" class="w-full p-2 border rounded" required></textarea>
-        <textarea name="experience" placeholder="Experience" class="w-full p-2 border rounded" required></textarea>
-        <textarea name="biography" placeholder="Biography" class="w-full p-2 border rounded" required></textarea>
-
-        <button type="submit" class="w-full bg-green-500 text-white px-4 py-2 rounded hover:bg-green-600">
-            Register
-        </button>
-    </form>
+    </div>
 </div>
 
 <script>
     setTimeout(() => {
-        const container = document.getElementById('message-container');
-        if (container) {
-            container.style.opacity = '0';
-            setTimeout(() => container.remove(), 500);
+        const container = document.querySelector('[role="alert"]');
+        if (container && container.parentElement) {
+            container.parentElement.style.opacity = '0';
+            setTimeout(() => container.parentElement.remove(), 500);
         }
     }, 5000);
 </script>

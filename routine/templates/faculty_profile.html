@@ -3,109 +3,151 @@
 {% block title %}Faculty Profile{% endblock %}
 {% block content %}
 <div class="container mx-auto px-4 py-8">
+    <!-- Back Button -->
+    <a href="{% url 'dashboard' %}" class="inline-flex items-center space-x-2 text-green-600 hover:text-green-700 mb-6 font-semibold">
+        <i class="fas fa-arrow-left"></i>
+        <span>Back to Dashboard</span>
+    </a>
+
     <!-- Profile Header Section -->
-    <div class="bg-white/80 shadow-md rounded-lg p-6">
-        <div class="flex items-center space-x-4">
+    <div class="bg-gradient-to-r from-green-600 to-green-700 rounded-2xl shadow-2xl p-8 text-white mb-8">
+        <div class="flex flex-col md:flex-row items-center md:items-start space-y-6 md:space-y-0 md:space-x-8">
             <!-- Profile Picture -->
-            <div class="w-20 h-20 bg-gray-300 rounded-full flex-shrink-0">
-                {% if faculty.picture %}
-                    <img src="{{ faculty.picture.url }}" alt="Faculty Picture" class="w-full h-full rounded-full object-cover">
-                {% else %}
-                    <img src="{% static 'img/default-avatar.jpg' %}" alt="Faculty Picture" class="w-full h-full rounded-full object-cover">
-                {% endif %}
+            <div class="flex-shrink-0">
+                <div class="w-32 h-32 bg-white rounded-full flex items-center justify-center shadow-lg overflow-hidden">
+                    {% if faculty.picture %}
+                        <img src="{{ faculty.picture.url }}" alt="Faculty Picture" class="w-full h-full object-cover">
+                    {% else %}
+                        <div class="w-full h-full flex items-center justify-center bg-gradient-to-br from-slate-300 to-slate-400">
+                            <i class="fas fa-user text-4xl text-white"></i>
+                        </div>
+                    {% endif %}
+                </div>
             </div>
+
             <!-- Profile Info -->
-            <div>
-                <h2 class="text-2xl font-semibold text-gray-800">Welcome, {{ faculty.name }}</h2>
-                <p class="text-gray-600">Faculty Code: {{ faculty.faculty_code }}</p>
-                <p class="text-gray-600">Position: {{ faculty.get_position_display }}</p>
-                <p class="text-gray-600">Department: {{ faculty.get_department_display }}</p>
+            <div class="text-center md:text-left">
+                <h1 class="text-4xl font-bold mb-2">{{ faculty.name }}</h1>
+                <p class="text-green-100 text-lg">{{ faculty.position }}</p>
+                <p class="text-green-100 text-lg">Faculty Code: <span class="font-semibold">{{ faculty.faculty_code }}</span></p>
+                <p class="text-green-100 text-lg">Department: <span class="font-semibold">{{ faculty.department }}</span></p>
+                <p class="text-green-100 text-lg">Email: <span class="font-semibold">{{ faculty.email }}</span></p>
             </div>
         </div>
     </div>
 
     <!-- Profile Details Section -->
-    <div class="mt-6 grid grid-cols-1 md:grid-cols-2 gap-6">
+    <div class="grid grid-cols-1 lg:grid-cols-2 gap-8 mb-8">
         <!-- Personal Information -->
-        <div class="bg-white/80 shadow-md rounded-lg p-6">
-            <h3 class="text-xl font-semibold text-gray-800 mb-4">Personal Information</h3>
+        <div class="bg-white rounded-2xl shadow-lg p-8 border-t-4 border-green-600">
+            <h2 class="text-2xl font-bold text-slate-900 mb-6 flex items-center space-x-3">
+                <div class="w-10 h-10 bg-green-600 rounded-lg flex items-center justify-center">
+                    <i class="fas fa-user text-white"></i>
+                </div>
+                <span>Personal Information</span>
+            </h2>
             <ul class="space-y-4">
-                <li class="flex justify-between text-gray-700">
-                    <span class="font-medium">Name:</span>
-                    <span>{{ faculty.name }}</span>
+                <li class="flex justify-between items-center pb-4 border-b border-slate-200">
+                    <span class="font-semibold text-slate-600">Name:</span>
+                    <span class="text-slate-900 font-bold">{{ faculty.name }}</span>
                 </li>
-                <li class="flex justify-between text-gray-700">
-                    <span class="font-medium">Faculty Code:</span>
-                    <span>{{ faculty.faculty_code }}</span>
+                <li class="flex justify-between items-center pb-4 border-b border-slate-200">
+                    <span class="font-semibold text-slate-600">Faculty Code:</span>
+                    <span class="text-slate-900 font-bold">{{ faculty.faculty_code }}</span>
                 </li>
-                <li class="flex justify-between text-gray-700">
-                    <span class="font-medium">Email:</span>
-                    <span>{{ faculty.email }}</span>
+                <li class="flex justify-between items-center pb-4 border-b border-slate-200">
+                    <span class="font-semibold text-slate-600">Email:</span>
+                    <span class="text-blue-600 font-bold hover:underline cursor-pointer">{{ faculty.email }}</span>
                 </li>
-                <li class="flex justify-between text-gray-700">
-                    <span class="font-medium">Position:</span>
-                    <span>{{ faculty.get_position_display }}</span>
+                <li class="flex justify-between items-center pb-4 border-b border-slate-200">
+                    <span class="font-semibold text-slate-600">Position:</span>
+                    <span class="text-slate-900 font-bold bg-green-50 px-3 py-1 rounded-full">{{ faculty.position }}</span>
                 </li>
-                <li class="flex justify-between text-gray-700">
-                    <span class="font-medium">Department:</span>
-                    <span>{{ faculty.get_department_display }}</span>
+                <li class="flex justify-between items-center pb-4 border-b border-slate-200">
+                    <span class="font-semibold text-slate-600">Department:</span>
+                    <span class="text-slate-900 font-bold bg-blue-50 px-3 py-1 rounded-full">{{ faculty.department }}</span>
                 </li>
-                <li class="flex justify-between text-gray-700">
-                    <span class="font-medium">Office Building:</span>
-                    <span>{{ faculty.get_office_building_display }}</span>
+                <li class="flex justify-between items-center pb-4 border-b border-slate-200">
+                    <span class="font-semibold text-slate-600">Office Building:</span>
+                    <span class="text-slate-900 font-bold">{{ faculty.office_building }}</span>
                 </li>
-                <li class="flex justify-between text-gray-700">
-                    <span class="font-medium">Room Name:</span>
-                    <span>{{ faculty.room_name }}</span>
-                </li>
-            </ul>
-        </div>
-
-        <!-- Academic & Professional Information -->
-        <div class="bg-white/80 shadow-md rounded-lg p-6">
-            <h3 class="text-xl font-semibold text-gray-800 mb-4">
-                Academic & Professional Information
-            </h3>
-            <ul class="space-y-6">
-                <li class="flex flex-col md:flex-row md:items-start text-gray-700">
-                    <span class="font-medium w-full md:w-1/4 mb-2 md:mb-0">
-                        Academic Background:
-                    </span>
-                    <div class="w-full md:w-3/4 text-gray-700 break-words">
-                        <span class="whitespace-pre-wrap">{{ faculty.academic_background|linebreaksbr }}</span>
-                    </div>
-                </li>
-                <li class="flex flex-col md:flex-row md:items-start text-gray-700">
-                    <span class="font-medium w-full md:w-1/4 mb-2 md:mb-0">
-                        Experience:
-                    </span>
-                    <div class="w-full md:w-3/4 text-gray-700 break-words">
-                        <span class="whitespace-pre-wrap">{{ faculty.experience|linebreaksbr }}</span>
-                    </div>
-                </li>
-                <li class="flex flex-col md:flex-row md:items-start text-gray-700">
-                    <span class="font-medium w-full md:w-1/4 mb-2 md:mb-0">
-                        Biography:
-                    </span>
-                    <div class="w-full md:w-3/4 text-gray-700 break-words">
-                        <span class="whitespace-pre-wrap">{{ faculty.biography|linebreaksbr }}</span>
-                    </div>
+                <li class="flex justify-between items-center pt-2">
+                    <span class="font-semibold text-slate-600">Room Name:</span>
+                    <span class="text-slate-900 font-bold">{{ faculty.room_name }}</span>
                 </li>
             </ul>
         </div>
 
-        <div class="bg-white shadow-md rounded-lg p-6">
-            <h3 class="text-xl font-semibold text-gray-800 mb-4">Account Settings</h3>
-            <ul class="space-y-4">
-                <li>
-                    <a href="/" class="text-blue-600 hover:underline">Change Password</a>
-                </li>
-            </ul>
+        <!-- Account Settings Section -->
+        <div class="bg-white rounded-2xl shadow-lg p-8 border-t-4 border-purple-600">
+            <h2 class="text-2xl font-bold text-slate-900 mb-6 flex items-center space-x-3">
+                <div class="w-10 h-10 bg-purple-600 rounded-lg flex items-center justify-center">
+                    <i class="fas fa-cog text-white"></i>
+                </div>
+                <span>Account Settings</span>
+            </h2>
+
+            <!-- Action Buttons -->
+            <div class="space-y-3">
+                <a href="{% url 'faculty-change-password' %}" class="block text-center bg-gradient-to-r from-green-600 to-green-700 hover:from-green-700 hover:to-green-800 text-white font-bold py-3 px-4 rounded-lg transition transform hover:scale-105">
+                    <i class="fas fa-key"></i> Change Password
+                </a>
+                <a href="{% url 'dashboard' %}" class="block text-center bg-gradient-to-r from-cyan-600 to-cyan-700 hover:from-cyan-700 hover:to-cyan-800 text-white font-bold py-3 px-4 rounded-lg transition transform hover:scale-105">
+                    <i class="fas fa-arrow-right"></i> Back to Dashboard
+                </a>
+            </div>
+
+            <!-- Security Info -->
+            <div class="mt-6 pt-6 border-t border-slate-200">
+                <p class="text-xs text-slate-500 flex items-center space-x-2">
+                    <i class="fas fa-shield-alt text-green-600"></i>
+                    <span>Your account is protected with advanced security measures.</span>
+                </p>
+            </div>
         </div>
-
-
-
-
     </div>
+
+    <!-- Academic & Professional Information -->
+    <div class="bg-white rounded-2xl shadow-lg p-8 border-t-4 border-orange-600 mb-8">
+        <h2 class="text-2xl font-bold text-slate-900 mb-6 flex items-center space-x-3">
+            <div class="w-10 h-10 bg-orange-600 rounded-lg flex items-center justify-center">
+                <i class="fas fa-book text-white"></i>
+            </div>
+            <span>Academic & Professional Information</span>
+        </h2>
+
+        <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+            {% if faculty.academic_background %}
+                <div class="lg:col-span-1 bg-gradient-to-br from-orange-50 to-orange-100 p-6 rounded-xl">
+                    <h3 class="font-bold text-slate-900 mb-3 flex items-center space-x-2">
+                        <i class="fas fa-graduation-cap text-orange-600"></i>
+                        <span>Academic Background</span>
+                    </h3>
+                    <p class="text-slate-700 text-sm whitespace-pre-wrap leading-relaxed">{{ faculty.academic_background }}</p>
+                </div>
+            {% endif %}
+
+            {% if faculty.experience %}
+                <div class="lg:col-span-1 bg-gradient-to-br from-blue-50 to-blue-100 p-6 rounded-xl">
+                    <h3 class="font-bold text-slate-900 mb-3 flex items-center space-x-2">
+                        <i class="fas fa-briefcase text-blue-600"></i>
+                        <span>Experience</span>
+                    </h3>
+                    <p class="text-slate-700 text-sm whitespace-pre-wrap leading-relaxed">{{ faculty.experience }}</p>
+                </div>
+            {% endif %}
+
+            {% if faculty.biography %}
+                <div class="lg:col-span-1 bg-gradient-to-br from-purple-50 to-purple-100 p-6 rounded-xl">
+                    <h3 class="font-bold text-slate-900 mb-3 flex items-center space-x-2">
+                        <i class="fas fa-user-tie text-purple-600"></i>
+                        <span>Biography</span>
+                    </h3>
+                    <p class="text-slate-700 text-sm whitespace-pre-wrap leading-relaxed">{{ faculty.biography }}</p>
+                </div>
+            {% endif %}
+        </div>
+    </div>
+
 </div>
 {% endblock %}
