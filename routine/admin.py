@@ -1,6 +1,6 @@
 from django.contrib import admin
 from unfold.admin import ModelAdmin
-from .models import Student, Faculty, ClassRoutine, Classroom, ClassroomBooking, Attendance, AttendanceRecord
+from .models import Student, Faculty, ClassRoutine, Classroom, ClassroomBooking, Attendance, AttendanceRecord, FacultyNotice, StudentNotification
 from django.contrib.auth.admin import UserAdmin as BaseUserAdmin
 from django.contrib.auth.admin import GroupAdmin as BaseGroupAdmin
 from django.contrib.auth.models import User, Group
@@ -201,4 +201,64 @@ class AttendanceRecordAdmin(ModelAdmin):
     def is_present_display(self, obj):
         return '✓ Present' if obj.is_present else '✗ Absent'
     is_present_display.short_description = 'Status'
+
+
+@admin.register(FacultyNotice)
+class FacultyNoticeAdmin(ModelAdmin):
+    list_display = ('title', 'get_faculty', 'get_course', 'notice_type', 'posted_date', 'is_active')
+    list_filter = ('notice_type', 'posted_date', 'is_active', 'faculty')
+    search_fields = ('title', 'faculty__name', 'class_routine__class_code')
+    readonly_fields = ('created_at', 'updated_at')
+    
+    fieldsets = (
+        ('Notice Information', {
+            'fields': ('faculty', 'class_routine', 'title', 'notice_type')
+        }),
+        ('Content', {
+            'fields': ('content', 'document')
+        }),
+        ('Schedule', {
+            'fields': ('posted_date', 'is_active')
+        }),
+        ('Timestamps', {
+            'classes': ('collapse',),
+            'fields': ('created_at', 'updated_at'),
+            'description': 'Automatically managed'
+        }),
+    )
+    
+    def get_faculty(self, obj):
+        return obj.faculty.name
+    get_faculty.short_description = 'Faculty'
+    
+    def get_course(self, obj):
+        return obj.class_routine.class_code
+    get_course.short_description = 'Course'
+
+
+@admin.register(StudentNotification)
+class StudentNotificationAdmin(ModelAdmin):
+    list_display = ('get_student', 'get_notice_title', 'is_read', 'created_at')
+    list_filter = ('is_read', 'created_at', 'notice__notice_type')
+    search_fields = ('student__student_name', 'notice__title')
+    readonly_fields = ('created_at',)
+    
+    fieldsets = (
+        ('Notification', {
+            'fields': ('student', 'notice', 'is_read')
+        }),
+        ('Timestamps', {
+            'classes': ('collapse',),
+            'fields': ('created_at',),
+            'description': 'Automatically managed'
+        }),
+    )
+    
+    def get_student(self, obj):
+        return obj.student.student_name
+    get_student.short_description = 'Student'
+    
+    def get_notice_title(self, obj):
+        return obj.notice.title
+    get_notice_title.short_description = 'Notice'
 

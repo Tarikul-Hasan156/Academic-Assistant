@@ -312,3 +312,52 @@ class AttendanceRecord(models.Model):
         status = "Present" if self.is_present else "Absent"
         return f"{self.student.student_name} - {status}"
 
+
+class FacultyNotice(models.Model):
+    """Model for faculty to post important notices (CT dates, assignments, etc.)"""
+    NOTICE_TYPE_CHOICES = [
+        ('CT_DATE', 'CT Date'),
+        ('ASSIGNMENT_DATE', 'Assignment Date'),
+        ('IMPORTANT_NOTICE', 'Important Notice'),
+    ]
+
+    faculty = models.ForeignKey(Faculty, on_delete=models.CASCADE, related_name='notices')
+    class_routine = models.ForeignKey(ClassRoutine, on_delete=models.CASCADE, related_name='notices')
+    title = models.CharField(max_length=255)
+    content = models.TextField()
+    notice_type = models.CharField(max_length=20, choices=NOTICE_TYPE_CHOICES, default='IMPORTANT_NOTICE')
+    document = models.FileField(upload_to='faculty_notices/', blank=True, null=True)
+    posted_date = models.DateField()
+    is_active = models.BooleanField(default=True)
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
+
+    class Meta:
+        verbose_name_plural = 'Faculty Notices'
+        ordering = ['-posted_date', '-created_at']
+
+    def __str__(self):
+        return f"{self.title} - {self.faculty.name}"
+
+    def is_expired(self):
+        """Check if notice is expired (posted date has passed)"""
+        from django.utils import timezone
+        today = timezone.now().date()
+        return self.posted_date < today
+
+
+class StudentNotification(models.Model):
+    """Model for tracking student notifications for faculty notices"""
+    student = models.ForeignKey(Student, on_delete=models.CASCADE, related_name='notice_notifications')
+    notice = models.ForeignKey(FacultyNotice, on_delete=models.CASCADE, related_name='student_notifications')
+    is_read = models.BooleanField(default=False)
+    created_at = models.DateTimeField(auto_now_add=True)
+
+    class Meta:
+        verbose_name_plural = 'Student Notifications'
+        ordering = ['-created_at']
+        unique_together = [['student', 'notice']]
+
+    def __str__(self):
+        return f"{self.student.student_name} - {self.notice.title}"
+

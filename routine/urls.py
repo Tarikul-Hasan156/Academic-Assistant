@@ -38,6 +38,16 @@ urlpatterns = [
     path('faculty/attendance/mark/<int:attendance_id>/', views.attendance_mark_students, name='attendance-mark-students'),
     path('faculty/attendance/history/', views.attendance_history, name='attendance-history'),
     path('faculty/attendance/view/<int:attendance_id>/', views.attendance_view_details, name='attendance-view-details'),
+    
+    # Faculty Notice Routes
+    path('faculty/notices/post/', views.faculty_post_notice, name='faculty-post-notice'),
+    path('faculty/notices/', views.faculty_notices_list, name='faculty-notices-list'),
+    path('faculty/notices/edit/<int:notice_id>/', views.faculty_edit_notice, name='faculty-edit-notice'),
+    path('faculty/notices/delete/<int:notice_id>/', views.faculty_delete_notice, name='faculty-delete-notice'),
+    
+    # Student Notice Routes
+    path('student/notices/', views.student_notices, name='student-notices'),
+    path('student/notification/<int:notification_id>/read/', views.mark_notification_read, name='mark-notification-read'),
 ]
 
 if settings.DEBUG:

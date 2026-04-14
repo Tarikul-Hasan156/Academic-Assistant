@@ -1,9 +1,9 @@
 from django.shortcuts import render, redirect
 from django.contrib.auth import authenticate, login, logout, update_session_auth_hash
 from django.contrib.auth.models import User
-from .forms import StudentRegisterForm, FacultyRegisterForm, ClassroomBookingForm, AttendanceForm, AttendanceRecordForm
+from .forms import StudentRegisterForm, FacultyRegisterForm, ClassroomBookingForm, AttendanceForm, AttendanceRecordForm, FacultyNoticeForm
 from django.contrib import messages
-from .models import Student, Faculty, ClassRoutine, Classroom, ClassroomBooking, Attendance, AttendanceRecord
+from .models import Student, Faculty, ClassRoutine, Classroom, ClassroomBooking, Attendance, AttendanceRecord, FacultyNotice, StudentNotification
 from django.contrib.auth.decorators import login_required
 from django.core.mail import send_mail
 from django.conf import settings
@@ -1014,3 +1014,204 @@ def attendance_view_details(request, attendance_id):
     }
     
     return render(request, 'attendance_view_details.html', context)
+
+
+# Faculty Notice Views
+
+@login_required
+def faculty_post_notice(request):
+    """Faculty posts important notices (CT date, assignments, etc.)"""
+    try:
+        faculty = Faculty.objects.get(user=request.user)
+    except Faculty.DoesNotExist:
+        messages.error(request, "Faculty profile not found.")
+        return redirect('dashboard')
+    
+    if request.method == 'POST':
+        form = FacultyNoticeForm(request.POST, request.FILES, faculty=faculty)
+        if form.is_valid():
+            notice = form.save(commit=False)
+            notice.faculty = faculty
+            notice.save()
+            
+            # Create notifications for all students in the course
+            students = Student.objects.filter(
+                intake=notice.class_routine.intake,
+                department=notice.class_routine.department,
+                section=notice.class_routine.section
+            )
+            
+            for student in students:
+                StudentNotification.objects.get_or_create(
+                    student=student,
+                    notice=notice
+                )
+            
+            messages.success(request, f"Notice '{notice.title}' posted successfully!")
+            return redirect('faculty-notices-list')
+    else:
+        form = FacultyNoticeForm(faculty=faculty)
+    
+    context = {
+        'form': form,
+        'page_title': 'Post New Notice',
+    }
+    return render(request, 'faculty_post_notice.html', context)
+
+
+@login_required
+def faculty_notices_list(request):
+    """Faculty view their posted notices"""
+    try:
+        faculty = Faculty.objects.get(user=request.user)
+    except Faculty.DoesNotExist:
+        messages.error(request, "Faculty profile not found.")
+        return redirect('dashboard')
+    
+    notices = FacultyNotice.objects.filter(faculty=faculty).order_by('-posted_date', '-created_at')
+    
+    # Filter by notice type if provided
+    notice_type = request.GET.get('type')
+    if notice_type:
+        notices = notices.filter(notice_type=notice_type)
+    
+    # Filter by status
+    status = request.GET.get('status')
+    if status == 'active':
+        notices = notices.filter(is_active=True)
+    elif status == 'inactive':
+        notices = notices.filter(is_active=False)
+    
+    context = {
+        'notices': notices,
+        'notice_types': FacultyNotice.NOTICE_TYPE_CHOICES,
+        'page_title': 'My Notices',
+    }
+    return render(request, 'faculty_notices_list.html', context)
+
+
+@login_required
+def faculty_edit_notice(request, notice_id):
+    """Faculty edit their notice"""
+    try:
+        faculty = Faculty.objects.get(user=request.user)
+    except Faculty.DoesNotExist:
+        messages.error(request, "Faculty profile not found.")
+        return redirect('dashboard')
+    
+    try:
+        notice = FacultyNotice.objects.get(id=notice_id, faculty=faculty)
+    except FacultyNotice.DoesNotExist:
+        messages.error(request, "Notice not found or you don't have permission to edit it.")
+        return redirect('faculty-notices-list')
+    
+    if request.method == 'POST':
+        form = FacultyNoticeForm(request.POST, request.FILES, instance=notice, faculty=faculty)
+        if form.is_valid():
+            form.save()
+            messages.success(request, f"Notice '{notice.title}' updated successfully!")
+            return redirect('faculty-notices-list')
+    else:
+        form = FacultyNoticeForm(instance=notice, faculty=faculty)
+    
+    context = {
+        'form': form,
+        'notice': notice,
+        'page_title': f'Edit Notice - {notice.title}',
+    }
+    return render(request, 'faculty_edit_notice.html', context)
+
+
+@login_required
+def faculty_delete_notice(request, notice_id):
+    """Faculty delete their notice"""
+    try:
+        faculty = Faculty.objects.get(user=request.user)
+    except Faculty.DoesNotExist:
+        messages.error(request, "Faculty profile not found.")
+        return redirect('dashboard')
+    
+    try:
+        notice = FacultyNotice.objects.get(id=notice_id, faculty=faculty)
+    except FacultyNotice.DoesNotExist:
+        messages.error(request, "Notice not found or you don't have permission to delete it.")
+        return redirect('faculty-notices-list')
+    
+    if request.method == 'POST':
+        title = notice.title
+        # Also delete associated notifications
+        StudentNotification.objects.filter(notice=notice).delete()
+        notice.delete()
+        messages.success(request, f"Notice '{title}' deleted successfully!")
+        return redirect('faculty-notices-list')
+    
+    context = {
+        'notice': notice,
+        'page_title': f'Delete Notice - {notice.title}',
+    }
+    return render(request, 'faculty_delete_notice.html', context)
+
+
+# Student Notice Views
+
+@login_required
+def student_notices(request):
+    """Student view important notices"""
+    try:
+        student = Student.objects.get(user=request.user)
+    except Student.DoesNotExist:
+        messages.error(request, "Student profile not found.")
+        return redirect('dashboard')
+    
+    # Get today's date
+    today = timezone.now().date()
+    
+    # Get notices for the student's section
+    notices = FacultyNotice.objects.filter(
+        class_routine__intake=student.intake,
+        class_routine__department=student.department,
+        class_routine__section=student.section,
+        is_active=True,
+        posted_date__gte=today  # Only show notices that haven't expired yet
+    ).order_by('-posted_date', '-created_at')
+    
+    # Get notifications for this student
+    notifications = StudentNotification.objects.filter(
+        student=student,
+        notice__is_active=True,
+        notice__posted_date__gte=today  # Only show non-expired notices
+    ).select_related('notice').order_by('-created_at')
+    
+    # Mark unread count
+    unread_count = notifications.filter(is_read=False).count()
+    
+    # Filter by notice type
+    notice_type = request.GET.get('type')
+    if notice_type:
+        notices = notices.filter(notice_type=notice_type)
+    
+    context = {
+        'notices': notices,
+        'notifications': notifications,
+        'unread_count': unread_count,
+        'notice_types': FacultyNotice.NOTICE_TYPE_CHOICES,
+        'page_title': 'Important Notices',
+    }
+    return render(request, 'student_notices.html', context)
+
+
+@login_required
+def mark_notification_read(request, notification_id):
+    """Mark a notification as read"""
+    try:
+        student = Student.objects.get(user=request.user)
+    except Student.DoesNotExist:
+        return JsonResponse({'status': 'error', 'message': 'Student not found'}, status=404)
+    
+    try:
+        notification = StudentNotification.objects.get(id=notification_id, student=student)
+        notification.is_read = True
+        notification.save()
+        return JsonResponse({'status': 'success', 'message': 'Notification marked as read'})
+    except StudentNotification.DoesNotExist:
+        return JsonResponse({'status': 'error', 'message': 'Notification not found'}, status=404)

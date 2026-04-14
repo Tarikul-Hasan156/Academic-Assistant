@@ -1,5 +1,5 @@
 from django import forms
-from .models import Student, Faculty, ClassRoutine, ClassroomBooking, Classroom, Attendance, AttendanceRecord
+from .models import Student, Faculty, ClassRoutine, ClassroomBooking, Classroom, Attendance, AttendanceRecord, FacultyNotice
 from django.contrib.auth.models import User
 
 
@@ -178,3 +178,56 @@ class AttendanceRecordForm(forms.ModelForm):
                 'class': 'w-4 h-4 cursor-pointer',
             }),
         }
+
+
+class FacultyNoticeForm(forms.ModelForm):
+    """Form for faculty to post important notices"""
+    
+    class Meta:
+        model = FacultyNotice
+        fields = ['class_routine', 'title', 'content', 'notice_type', 'document', 'posted_date', 'is_active']
+        widgets = {
+            'class_routine': forms.Select(attrs={
+                'class': 'form-control',
+                'required': True,
+            }),
+            'title': forms.TextInput(attrs={
+                'class': 'form-control',
+                'placeholder': 'Enter notice title',
+                'required': True,
+            }),
+            'content': forms.Textarea(attrs={
+                'class': 'form-control',
+                'rows': 6,
+                'placeholder': 'Enter notice content/details',
+                'required': True,
+            }),
+            'notice_type': forms.Select(attrs={
+                'class': 'form-control',
+                'required': True,
+            }),
+            'document': forms.FileInput(attrs={
+                'class': 'form-control',
+                'accept': '.pdf,.doc,.docx,.xlsx,.xls,.pptx,.jpg,.png',
+            }),
+            'posted_date': forms.DateInput(attrs={
+                'class': 'form-control',
+                'type': 'date',
+                'required': True,
+            }),
+            'is_active': forms.CheckboxInput(attrs={
+                'class': 'form-check-input',
+            }),
+        }
+    
+    def __init__(self, *args, faculty=None, **kwargs):
+        super().__init__(*args, **kwargs)
+        # Filter class_routine to show only the provided faculty's courses
+        if faculty:
+            self.fields['class_routine'].queryset = ClassRoutine.objects.filter(
+                faculty=faculty
+            ).select_related('faculty')
+        
+        # Set default value for is_active
+        if not self.instance.pk:
+            self.fields['is_active'].initial = True

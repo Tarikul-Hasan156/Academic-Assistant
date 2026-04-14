@@ -53,14 +53,23 @@
                     {% if user.is_authenticated %}
                         <span class="text-cyan-300 text-sm">{{ user.username }}</span>
                         {% if is_student %}
-                            <a href="{% url 'student-profile' %}" class="text-gray-200 hover:text-cyan-300 transition font-medium flex items-center space-x-1">
-                                <i class="fas fa-user-circle"></i>
-                                <span>Profile</span>
-                            </a>
-                            <a href="{% url 'dashboard' %}" class="text-gray-200 hover:text-cyan-300 transition font-medium flex items-center space-x-1">
-                                <i class="fas fa-home"></i>
-                                <span>Dashboard</span>
-                            </a>
+                        <!-- Notifications Badge -->
+                        <a href="{% url 'student-notices' %}" class="text-gray-200 hover:text-cyan-300 transition font-medium flex items-center space-x-1 relative">
+                            <i class="fas fa-bell text-xl"></i>
+                            {% if unread_count > 0 %}
+                                <span class="absolute -top-2 -right-2 bg-red-500 text-white text-xs font-bold rounded-full w-5 h-5 flex items-center justify-center">
+                                    {{ unread_count }}
+                                </span>
+                            {% endif %}
+                        </a>
+                        <a href="{% url 'student-profile' %}" class="text-gray-200 hover:text-cyan-300 transition font-medium flex items-center space-x-1">
+                            <i class="fas fa-user-circle"></i>
+                            <span>Profile</span>
+                        </a>
+                        <a href="{% url 'dashboard' %}" class="text-gray-200 hover:text-cyan-300 transition font-medium flex items-center space-x-1">
+                            <i class="fas fa-home"></i>
+                            <span>Dashboard</span>
+                        </a>
                         {% elif is_faculty %}
                             <a href="{% url 'faculty-profile' %}" class="text-gray-200 hover:text-cyan-300 transition font-medium flex items-center space-x-1">
                                 <i class="fas fa-user-circle"></i>
@@ -97,6 +106,15 @@
                 {% if user.is_authenticated %}
                     <div class="text-cyan-300 text-sm py-2">{{ user.username }}</div>
                     {% if is_student %}
+                        <!-- Notifications Badge Mobile -->
+                        <a href="{% url 'student-notices' %}" class="block text-gray-200 hover:text-cyan-300 py-2 relative">
+                            <i class="fas fa-bell"></i> Notices
+                            {% if unread_count > 0 %}
+                                <span class="inline-block ml-2 bg-red-500 text-white text-xs font-bold rounded-full px-2 py-0.5">
+                                    {{ unread_count }}
+                                </span>
+                            {% endif %}
+                        </a>
                         <a href="{% url 'student-profile' %}" class="block text-gray-200 hover:text-cyan-300 py-2">
                             <i class="fas fa-user-circle"></i> Profile
                         </a>
