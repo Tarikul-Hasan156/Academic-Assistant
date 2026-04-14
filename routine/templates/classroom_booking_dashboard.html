@@ -1,0 +1,379 @@
+{% extends 'base.html' %}
+{% load static %}
+{% block title %}Classroom Booking - Faculty Dashboard{% endblock %}
+{% block content %}
+<div class="container mx-auto px-4 py-8">
+    <!-- Page Header -->
+    <div class="mb-8">
+        <a href="{% url 'dashboard' %}" class="inline-flex items-center space-x-2 text-blue-600 hover:text-blue-700 mb-4 font-semibold">
+            <i class="fas fa-arrow-left"></i>
+            <span>Back to Dashboard</span>
+        </a>
+        <h1 class="text-4xl font-bold text-slate-900 mb-2">Classroom Booking System</h1>
+        <p class="text-gray-600">Find and book available classrooms for extra classes</p>
+    </div>
+
+    <!-- Quick Action Button -->
+    <div class="mb-8">
+        <a href="{% url 'book-classroom' %}" class="inline-flex items-center space-x-2 bg-gradient-to-r from-blue-600 to-blue-700 hover:from-blue-700 hover:to-blue-800 text-white font-bold py-3 px-6 rounded-lg transition transform hover:scale-105">
+            <i class="fas fa-plus-circle"></i>
+            <span>Book New Classroom</span>
+        </a>
+        <a href="{% url 'my-classroom-bookings' %}" class="inline-flex items-center space-x-2 bg-gradient-to-r from-green-600 to-green-700 hover:from-green-700 hover:to-green-800 text-white font-bold py-3 px-6 rounded-lg transition transform hover:scale-105 ml-4">
+            <i class="fas fa-calendar-check"></i>
+            <span>My Bookings</span>
+        </a>
+    </div>
+
+    <!-- Search and Filter Section -->
+    <div class="bg-white rounded-2xl shadow-lg p-6 mb-8 border-t-4 border-blue-600">
+        <h2 class="text-2xl font-bold text-slate-900 mb-4 flex items-center space-x-3">
+            <div class="w-10 h-10 bg-blue-600 rounded-lg flex items-center justify-center">
+                <i class="fas fa-search text-white"></i>
+            </div>
+            <span>Search Available Classrooms</span>
+        </h2>
+        
+        <form method="GET" class="grid grid-cols-1 md:grid-cols-3 gap-4">
+            <div>
+                <label for="id_booking_date" class="block text-sm font-semibold text-slate-700 mb-2">Date</label>
+                <input type="date" name="booking_date" id="id_booking_date" value="{{ booking_date }}" class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-600">
+            </div>
+            
+            <div>
+                <label for="id_building" class="block text-sm font-semibold text-slate-700 mb-2">Building</label>
+                <select name="building" id="id_building" class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-600">
+                    <option value="">-- All Buildings --</option>
+                    {% for choice_value, choice_label in building_choices %}
+                        <option value="{{ choice_value }}" {% if building == choice_value %}selected{% endif %}>{{ choice_label }}</option>
+                    {% endfor %}
+                </select>
+            </div>
+            
+            <div class="flex items-end">
+                <button type="submit" class="w-full bg-gradient-to-r from-blue-600 to-blue-700 hover:from-blue-700 hover:to-blue-800 text-white font-bold py-2 px-4 rounded-lg transition">
+                    <i class="fas fa-search"></i> Search
+                </button>
+            </div>
+        </form>
+    </div>
+
+    <!-- Classrooms Grid -->
+    <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 mb-8">
+        {% if booking_date %}
+            <!-- AVAILABLE CLASSROOMS SECTION -->
+            {% if available_classrooms %}
+            <div class="col-span-full">
+                <h3 class="text-2xl font-bold text-green-600 mb-4 flex items-center space-x-2">
+                    <i class="fas fa-check-circle"></i>
+                    <span>Available Classrooms ({{ available_classrooms|length }})</span>
+                </h3>
+            </div>
+            
+            {% for classroom in available_classrooms %}
+            <div class="bg-white rounded-2xl shadow-lg hover:shadow-2xl transition overflow-hidden border-l-4 border-green-600">
+                <div class="bg-gradient-to-r from-green-600 to-green-700 text-white p-4">
+                    <h3 class="text-xl font-bold">{{ classroom.building }} - Room {{ classroom.room_number }}</h3>
+                    <p class="text-green-100 text-sm">Capacity: {{ classroom.capacity }} seats</p>
+                </div>
+                
+                <div class="p-4">
+                    <div class="mb-4">
+                        <span class="inline-block bg-green-100 text-green-800 px-3 py-1 rounded-full text-sm font-semibold">
+                            <i class="fas fa-check-circle"></i> Available
+                        </span>
+                    </div>
+                    
+                    <div class="space-y-3">
+                        <div>
+                            <p class="text-sm text-gray-600">Floor: <span class="font-bold text-slate-900">{{ classroom.floor|default:"N/A" }}</span></p>
+                        </div>
+                    </div>
+                    
+                    <button onclick="goToBooking({{ classroom.id }}, '{{ booking_date }}')" class="w-full mt-4 bg-gradient-to-r from-green-600 to-green-700 hover:from-green-700 hover:to-green-800 text-white font-bold py-2 px-4 rounded-lg transition">
+                        <i class="fas fa-door-open"></i> Book Now
+                    </button>
+                </div>
+            </div>
+            {% endfor %}
+            {% else %}
+            <div class="col-span-full bg-green-50 rounded-lg p-6 border border-green-300">
+                <p class="text-center text-green-800 font-semibold">
+                    <i class="fas fa-check-circle"></i> No available classrooms for this date
+                </p>
+            </div>
+            {% endif %}
+
+            <!-- BOOKED CLASSROOMS SECTION -->
+            {% if booked_classrooms %}
+            <div class="col-span-full mt-8">
+                <h3 class="text-2xl font-bold text-red-600 mb-4 flex items-center space-x-2">
+                    <i class="fas fa-lock"></i>
+                    <span>Booked Classrooms ({{ booked_classrooms|length }})</span>
+                </h3>
+            </div>
+            
+            {% for classroom in booked_classrooms %}
+                {% with classroom.bookings.all|dictsort:"start_time"|first as booking %}
+                <div class="bg-white rounded-2xl shadow-lg overflow-hidden border-l-4 border-red-400 opacity-75">
+                    <div class="bg-gradient-to-r from-red-500 to-red-600 text-white p-4">
+                        <h3 class="text-xl font-bold">{{ classroom.building }} - Room {{ classroom.room_number }}</h3>
+                        <p class="text-red-100 text-sm">Capacity: {{ classroom.capacity }} seats</p>
+                    </div>
+                    
+                    <div class="p-4">
+                        <div class="mb-4">
+                            <span class="inline-block bg-red-100 text-red-800 px-3 py-1 rounded-full text-sm font-semibold">
+                                <i class="fas fa-lock"></i> Booked
+                            </span>
+                        </div>
+                        
+                        <div class="space-y-2 bg-gray-50 p-3 rounded">
+                            {% for booking in classroom.bookings.all %}
+                                {% if booking.booking_date|stringformat:"s" == booking_date and booking.status in 'CONFIRMED,PENDING,ONGOING' %}
+                                <div class="text-sm">
+                                    <p class="font-semibold text-red-700">{{ booking.start_time|time:"H:i" }} - {{ booking.end_time|time:"H:i" }}</p>
+                                    <p class="text-gray-600">By: {{ booking.faculty.name }}</p>
+                                    {% if booking.reason %}
+                                        <p class="text-gray-500 italic">{{ booking.reason }}</p>
+                                    {% endif %}
+                                </div>
+                                {% endif %}
+                            {% endfor %}
+                        </div>
+                    </div>
+                </div>
+                {% endwith %}
+            {% endfor %}
+            {% endif %}
+        {% else %}
+            <!-- NO DATE SELECTED -->
+            <div class="col-span-full bg-blue-50 rounded-lg p-6 border border-blue-300">
+                <p class="text-center text-blue-800 font-semibold">
+                    <i class="fas fa-calendar"></i> Select a date to see available and booked classrooms
+                </p>
+            </div>
+        {% endif %}
+    </div>
+
+    <!-- Recent Bookings Section -->
+    {% if faculty_bookings_for_date or faculty_bookings %}
+    <div class="bg-white rounded-2xl shadow-lg p-6 border-t-4 border-purple-600">
+        <h2 class="text-2xl font-bold text-slate-900 mb-4 flex items-center space-x-3">
+            <div class="w-10 h-10 bg-purple-600 rounded-lg flex items-center justify-center">
+                <i class="fas fa-list text-white"></i>
+            </div>
+            <span>
+                {% if booking_date %}
+                    Your Bookings on {{ booking_date }}
+                {% else %}
+                    Your Recent Bookings
+                {% endif %}
+            </span>
+        </h2>
+        
+        {% if booking_date and faculty_bookings_for_date %}
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
+                {% for booking in faculty_bookings_for_date %}
+                <div class="bg-gradient-to-br from-purple-50 to-purple-100 rounded-lg p-4 border border-purple-300">
+                    <div class="flex items-start justify-between mb-3">
+                        <div>
+                            <p class="font-bold text-slate-900">{{ booking.classroom.building }} - Room {{ booking.classroom.room_number }}</p>
+                            <p class="text-sm text-gray-600">{{ booking.booking_date }}</p>
+                        </div>
+                        {% if booking.status == 'CONFIRMED' %}
+                            <span class="bg-blue-500 text-white text-xs font-bold px-2 py-1 rounded">
+                                <i class="fas fa-check"></i> Confirmed
+                            </span>
+                        {% elif booking.status == 'ONGOING' %}
+                            <span class="bg-orange-500 text-white text-xs font-bold px-2 py-1 rounded">
+                                <i class="fas fa-hourglass-half"></i> Ongoing
+                            </span>
+                        {% elif booking.status == 'COMPLETED' %}
+                            <span class="bg-green-500 text-white text-xs font-bold px-2 py-1 rounded">
+                                <i class="fas fa-check-double"></i> Completed
+                            </span>
+                        {% else %}
+                            <span class="bg-gray-500 text-white text-xs font-bold px-2 py-1 rounded">{{ booking.status }}</span>
+                        {% endif %}
+                    </div>
+                    <p class="text-sm text-slate-700 font-semibold">{{ booking.start_time|time:"H:i" }} - {{ booking.end_time|time:"H:i" }}</p>
+                    {% if booking.reason %}
+                        <p class="text-sm text-slate-700 mt-2"><strong>Reason:</strong> {{ booking.reason }}</p>
+                    {% endif %}
+                    {% if booking.status in 'CONFIRMED,PENDING' %}
+                        <a href="{% url 'cancel-classroom-booking' booking.id %}" onclick="return confirm('Are you sure you want to cancel this booking?');" class="text-red-600 hover:text-red-800 font-semibold text-sm mt-3 inline-block">
+                            <i class="fas fa-trash"></i> Cancel
+                        </a>
+                    {% endif %}
+                </div>
+                {% endfor %}
+            </div>
+        {% elif not booking_date %}
+            <div class="overflow-x-auto">
+                <table class="w-full">
+                    <thead>
+                        <tr class="border-b-2 border-gray-200">
+                            <th class="text-left py-3 px-4 font-bold text-slate-600">Classroom</th>
+                            <th class="text-left py-3 px-4 font-bold text-slate-600">Date</th>
+                            <th class="text-left py-3 px-4 font-bold text-slate-600">Time</th>
+                            <th class="text-left py-3 px-4 font-bold text-slate-600">Status</th>
+                            <th class="text-center py-3 px-4 font-bold text-slate-600">Action</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for booking in faculty_bookings|slice:":5" %}
+                        <tr class="border-b border-gray-200 hover:bg-gray-50">
+                            <td class="py-3 px-4">{{ booking.classroom.building }} - Room {{ booking.classroom.room_number }}</td>
+                            <td class="py-3 px-4">{{ booking.booking_date }}</td>
+                            <td class="py-3 px-4">{{ booking.start_time|time:"H:i" }} - {{ booking.end_time|time:"H:i" }}</td>
+                            <td class="py-3 px-4">
+                                {% if booking.status == 'CONFIRMED' %}
+                                    <span class="inline-block bg-blue-100 text-blue-800 px-3 py-1 rounded-full text-sm font-semibold">
+                                        <i class="fas fa-check"></i> Confirmed
+                                    </span>
+                                {% elif booking.status == 'COMPLETED' %}
+                                    <span class="inline-block bg-green-100 text-green-800 px-3 py-1 rounded-full text-sm font-semibold">
+                                        <i class="fas fa-check-double"></i> Completed
+                                    </span>
+                                {% elif booking.status == 'CANCELLED' %}
+                                    <span class="inline-block bg-red-100 text-red-800 px-3 py-1 rounded-full text-sm font-semibold">
+                                        <i class="fas fa-times"></i> Cancelled
+                                    </span>
+                                {% else %}
+                                    <span class="inline-block bg-yellow-100 text-yellow-800 px-3 py-1 rounded-full text-sm font-semibold">
+                                        <i class="fas fa-clock"></i> {{ booking.status }}
+                                    </span>
+                                {% endif %}
+                            </td>
+                            <td class="py-3 px-4 text-center">
+                                {% if booking.status in 'CONFIRMED,PENDING' %}
+                                    <a href="{% url 'cancel-classroom-booking' booking.id %}" onclick="return confirm('Are you sure you want to cancel this booking?');" class="text-red-600 hover:text-red-800 font-semibold">
+                                        <i class="fas fa-trash"></i> Cancel
+                                    </a>
+                                {% else %}
+                                    <span class="text-gray-400">N/A</span>
+                                {% endif %}
+                            </td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+            
+            <div class="mt-4 text-center">
+                <a href="{% url 'my-classroom-bookings' %}" class="text-blue-600 hover:text-blue-800 font-semibold">
+                    View All Bookings <i class="fas fa-arrow-right"></i>
+                </a>
+            </div>
+        {% else %}
+            <div class="bg-gray-50 rounded-lg p-4 text-center border border-gray-300">
+                <p class="text-gray-600 font-semibold">
+                    <i class="fas fa-inbox"></i> No bookings for this date
+                </p>
+            </div>
+        {% endif %}
+    </div>
+    {% endif %}
+</div>
+
+<!-- Availability Modal -->
+<div id="availabilityModal" class="hidden fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
+    <div class="bg-white rounded-2xl max-w-2xl w-full max-h-96 overflow-y-auto">
+        <div class="sticky top-0 bg-gradient-to-r from-cyan-600 to-cyan-700 text-white p-4 flex justify-between items-center">
+            <h3 class="text-xl font-bold">Classroom Availability</h3>
+            <button onclick="closeModal()" class="text-2xl hover:text-cyan-200">&times;</button>
+        </div>
+        
+        <div id="modalContent" class="p-6">
+            <p class="text-center text-gray-600"><i class="fas fa-spinner fa-spin"></i> Loading...</p>
+        </div>
+        
+        <div class="bg-gray-100 p-4 flex justify-center space-x-4 sticky bottom-0">
+            <a href="{% url 'book-classroom' %}" class="bg-gradient-to-r from-blue-600 to-blue-700 hover:from-blue-700 hover:to-blue-800 text-white font-bold py-2 px-6 rounded-lg transition">
+                <i class="fas fa-plus-circle"></i> Book Now
+            </a>
+            <button onclick="closeModal()" class="bg-gray-400 hover:bg-gray-500 text-white font-bold py-2 px-6 rounded-lg transition">
+                Close
+            </button>
+        </div>
+    </div>
+</div>
+
+<script>
+function goToBooking(classroomId, bookingDate) {
+    // Redirect to booking form with pre-selected classroom
+    let url = `{% url 'book-classroom' %}?classroom_id=${classroomId}`;
+    if (bookingDate) {
+        url += `&booking_date=${bookingDate}`;
+    }
+    window.location.href = url;
+}
+
+function checkAvailability(classroomId) {
+    const bookingDate = document.getElementById('id_booking_date').value;
+    
+    if (!bookingDate) {
+        alert('Please select a date first');
+        return;
+    }
+    
+    const modal = document.getElementById('availabilityModal');
+    const modalContent = document.getElementById('modalContent');
+    
+    // Show modal
+    modal.classList.remove('hidden');
+    
+    // Fetch availability data
+    fetch(`{% url 'classroom-availability-api' %}?classroom_id=${classroomId}&booking_date=${bookingDate}`)
+        .then(response => response.json())
+        .then(data => {
+            let html = `
+                <div class="mb-4">
+                    <h4 class="text-lg font-bold text-slate-900 mb-2">
+                        ${data.classroom.name}
+                    </h4>
+                    <p class="text-gray-600 mb-4">
+                        <strong>Capacity:</strong> ${data.classroom.capacity} seats
+                    </p>
+                    <p class="text-gray-600 mb-4">
+                        <strong>Date:</strong> ${data.date}
+                    </p>
+                </div>
+            `;
+            
+            if (data.booked_slots.length > 0) {
+                html += '<h5 class="font-bold text-slate-900 mb-3">Booked Time Slots:</h5>';
+                html += '<div class="space-y-2 mb-4">';
+                
+                data.booked_slots.forEach(slot => {
+                    html += `
+                        <div class="bg-red-50 border border-red-200 rounded p-3">
+                            <p class="font-semibold text-red-800">
+                                ${slot.start_time} - ${slot.end_time}
+                            </p>
+                            <p class="text-sm text-red-600">Faculty: ${slot.faculty}</p>
+                        </div>
+                    `;
+                });
+                
+                html += '</div>';
+            } else {
+                html += '<div class="bg-green-50 border border-green-200 rounded p-4 mb-4">';
+                html += '<p class="text-green-800 font-semibold"><i class="fas fa-check-circle"></i> This classroom is fully available for the selected date!</p>';
+                html += '</div>';
+            }
+            
+            modalContent.innerHTML = html;
+        })
+        .catch(error => {
+            modalContent.innerHTML = '<p class="text-center text-red-600"><i class="fas fa-exclamation-circle"></i> Error loading availability data</p>';
+            console.error('Error:', error);
+        });
+}
+
+function closeModal() {
+    document.getElementById('availabilityModal').classList.add('hidden');
+}
+</script>
+{% endblock %}

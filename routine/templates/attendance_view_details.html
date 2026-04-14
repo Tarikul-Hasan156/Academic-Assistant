@@ -1,0 +1,311 @@
+{% extends 'base.html' %}
+
+{% block title %}Attendance Details - Academic Assistant{% endblock %}
+
+{% block content %}
+<div class="min-h-screen bg-gray-50 py-12 px-4 sm:px-6 lg:px-8">
+    <div class="max-w-6xl mx-auto">
+        <!-- Page Header -->
+        <div class="mb-8">
+            <div class="flex justify-between items-start">
+                <div>
+                    <a href="{% url 'attendance-history' %}" class="text-blue-600 hover:text-blue-700 mb-4 inline-flex items-center">
+                        <svg class="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7"></path>
+                        </svg>
+                        Back to History
+                    </a>
+                    <h1 class="text-3xl font-bold text-gray-900">Attendance Details</h1>
+                    <p class="text-gray-600 mt-2">{{ attendance.class_routine.class_code }} - Intake {{ attendance.intake }}, Section {{ attendance.section }}</p>
+                </div>
+                <button onclick="window.print()" class="px-6 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors font-medium print:hidden">
+                    🖨️ Print / Save as PDF
+                </button>
+            </div>
+        </div>
+
+        <!-- Session Information Card -->
+        <div class="bg-white rounded-lg shadow-md p-6 mb-8">
+            <h2 class="text-xl font-semibold text-gray-900 mb-4">Session Information</h2>
+            <div class="grid grid-cols-2 md:grid-cols-4 gap-6">
+                <div>
+                    <p class="text-sm text-gray-600">Date</p>
+                    <p class="text-lg font-semibold text-gray-900">{{ attendance.attendance_date|date:"M d, Y" }}</p>
+                </div>
+                <div>
+                    <p class="text-sm text-gray-600">Intake</p>
+                    <p class="text-lg font-semibold text-gray-900">{{ attendance.intake }}</p>
+                </div>
+                <div>
+                    <p class="text-sm text-gray-600">Section</p>
+                    <p class="text-lg font-semibold text-gray-900">{{ attendance.section }}</p>
+                </div>
+                <div>
+                    <p class="text-sm text-gray-600">Number of Classes</p>
+                    <p class="text-lg font-semibold text-gray-900">{{ attendance.num_classes }}</p>
+                </div>
+            </div>
+            <div class="mt-6 pt-6 border-t border-gray-200">
+                <div class="grid grid-cols-2 md:grid-cols-3 gap-6">
+                    <div>
+                        <p class="text-sm text-gray-600">Status</p>
+                        <p class="text-lg font-semibold">
+                            {% if attendance.status == 'SUBMITTED' %}
+                                <span class="px-3 py-1 bg-green-100 text-green-700 rounded-full text-sm">Submitted</span>
+                            {% else %}
+                                <span class="px-3 py-1 bg-blue-100 text-blue-700 rounded-full text-sm">Draft</span>
+                            {% endif %}
+                        </p>
+                    </div>
+                    {% if attendance.submitted_at %}
+                        <div>
+                            <p class="text-sm text-gray-600">Submitted At</p>
+                            <p class="text-lg font-semibold text-gray-900">{{ attendance.submitted_at|date:"M d, Y H:i" }}</p>
+                        </div>
+                    {% endif %}
+                    {% if attendance.status == 'SUBMITTED' %}
+                        <div>
+                            <p class="text-sm text-gray-600">Modification Status</p>
+                            <p class="text-lg font-semibold">
+                                {% if can_modify %}
+                                    <span class="text-yellow-600">🔓 Modifiable</span>
+                                {% else %}
+                                    <span class="text-red-600">🔒 Locked</span>
+                                {% endif %}
+                            </p>
+                        </div>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+
+        <!-- Statistics Bar -->
+        <div class="grid grid-cols-2 md:grid-cols-4 gap-4 mb-8">
+            <div class="bg-white rounded-lg shadow-md p-6">
+                <p class="text-sm text-gray-600 font-medium">Total Students</p>
+                <p class="text-4xl font-bold text-gray-900">{{ total_students }}</p>
+            </div>
+            <div class="bg-green-50 rounded-lg shadow-md p-6 border-l-4 border-green-500">
+                <p class="text-sm text-green-600 font-medium">Present</p>
+                <p class="text-4xl font-bold text-green-600">{{ present_count }}</p>
+            </div>
+            <div class="bg-red-50 rounded-lg shadow-md p-6 border-l-4 border-red-500">
+                <p class="text-sm text-red-600 font-medium">Absent</p>
+                <p class="text-4xl font-bold text-red-600">{{ absent_count }}</p>
+            </div>
+            <div class="bg-blue-50 rounded-lg shadow-md p-6 border-l-4 border-blue-500">
+                <p class="text-sm text-blue-600 font-medium">Attendance %</p>
+                <p class="text-4xl font-bold text-blue-600">{{ attendance_percentage|floatformat:1 }}%</p>
+            </div>
+        </div>
+
+        <!-- Student Records Table -->
+        <div class="bg-white rounded-lg shadow-md overflow-hidden">
+            <div class="overflow-x-auto">
+                <table class="w-full">
+                    <thead class="bg-gray-100 border-b border-gray-200">
+                        <tr>
+                            <th class="px-6 py-3 text-left text-sm font-semibold text-gray-900 w-12">#</th>
+                            <th class="px-6 py-3 text-left text-sm font-semibold text-gray-900">Student Name</th>
+                            <th class="px-6 py-3 text-left text-sm font-semibold text-gray-900">Student ID</th>
+                            <th class="px-6 py-3 text-left text-sm font-semibold text-gray-900">Intake</th>
+                            <th class="px-6 py-3 text-left text-sm font-semibold text-gray-900">Section</th>
+                            <th class="px-6 py-3 text-center text-sm font-semibold text-gray-900 print:table-cell">Status</th>
+                            <th class="px-6 py-3 text-center text-sm font-semibold text-gray-900 print:table-cell">Attendance %</th>
+                        </tr>
+                    </thead>
+                    <tbody class="divide-y divide-gray-200">
+                        {% for item in records_with_percentage %}
+                            <tr class="hover:bg-gray-50 transition-colors">
+                                <td class="px-6 py-4 text-gray-600">{{ forloop.counter }}</td>
+                                <td class="px-6 py-4">
+                                    <p class="font-medium text-gray-900">{{ item.record.student.student_name }}</p>
+                                </td>
+                                <td class="px-6 py-4 text-gray-900">
+                                    {{ item.record.student.student_id }}
+                                </td>
+                                <td class="px-6 py-4 text-gray-900">
+                                    {{ item.record.student.intake }}
+                                </td>
+                                <td class="px-6 py-4 text-gray-900">
+                                    {{ item.record.student.section }}
+                                </td>
+                                <td class="px-6 py-4 text-center">
+                                    {% if item.record.is_present %}
+                                        <span class="inline-block px-4 py-1 bg-green-100 text-green-700 rounded-full text-sm font-medium">✓ Present</span>
+                                    {% else %}
+                                        <span class="inline-block px-4 py-1 bg-red-100 text-red-700 rounded-full text-sm font-medium">✗ Absent</span>
+                                    {% endif %}
+                                </td>
+                                <td class="px-6 py-4 text-center font-semibold">
+                                    <span class="text-blue-600">{{ item.attendance_percentage|floatformat:1 }}%</span>
+                                </td>
+                            </tr>
+                        {% empty %}
+                            <tr>
+                                <td colspan="7" class="px-6 py-8 text-center">
+                                    <p class="text-gray-600">No student records found</p>
+                                </td>
+                            </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+
+        <!-- Edit Button -->
+        {% if can_modify and modification_locked == False %}
+            <div class="mt-8 flex gap-4">
+                <a href="{% url 'attendance-mark-students' attendance.id %}" class="px-6 py-2 bg-orange-600 text-white rounded-lg hover:bg-orange-700 transition-colors font-medium">
+                    ✏️ Edit Attendance
+                </a>
+                <a href="{% url 'attendance-history' %}" class="px-6 py-2 bg-gray-200 text-gray-900 rounded-lg hover:bg-gray-300 transition-colors font-medium">
+                    Back to History
+                </a>
+            </div>
+        {% else %}
+            <div class="mt-8">
+                <a href="{% url 'attendance-history' %}" class="px-6 py-2 bg-gray-200 text-gray-900 rounded-lg hover:bg-gray-300 transition-colors font-medium inline-block">
+                    Back to History
+                </a>
+            </div>
+        {% endif %}
+    </div>
+</div>
+
+<!-- Print Styles -->
+<style>
+    @media print {
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            background: white;
+            font-family: Arial, sans-serif;
+            font-size: 12px;
+        }
+
+        /* Hide elements that shouldn't print */
+        .print\:hidden,
+        button,
+        a.px-6,
+        .mb-8 > div:first-child,
+        .grid:not(table-grid) {
+            display: none !important;
+        }
+
+        @page {
+            size: A4 landscape;
+            margin: 8mm;
+        }
+
+        .min-h-screen {
+            min-height: auto;
+            page-break-after: auto;
+        }
+
+        .max-w-6xl {
+            max-width: 100%;
+        }
+
+        /* Print Header */
+        .mb-8 > div:last-child {
+            display: block !important;
+            margin-bottom: 15px;
+            page-break-after: avoid;
+        }
+
+        .mb-8 > div:last-child h1 {
+            font-size: 18px;
+            margin-bottom: 5px;
+            color: #000;
+            font-weight: bold;
+        }
+
+        .mb-8 > div:last-child p {
+            font-size: 11px;
+            color: #333;
+        }
+
+        /* Hide session info and statistics */
+        .bg-white:first-of-type,
+        .grid > div {
+            display: none !important;
+        }
+
+        /* Table Styles */
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 10px;
+            font-size: 11px;
+        }
+
+        thead {
+            page-break-after: avoid;
+        }
+
+        th {
+            background: #e5e7eb;
+            border: 1px solid #000;
+            padding: 6px;
+            text-align: left;
+            font-weight: bold;
+            font-size: 11px;
+        }
+
+        td {
+            border: 1px solid #000;
+            padding: 6px;
+            text-align: left;
+        }
+
+        tbody tr {
+            page-break-inside: avoid;
+        }
+
+        .w-12 {
+            width: 30px;
+        }
+
+        /* Hide status column in print, show percentage */
+        table th:nth-child(6),
+        table td:nth-child(6) {
+            display: none !important;
+        }
+
+        /* Show percentage column */
+        table th:nth-child(7),
+        table td:nth-child(7) {
+            display: table-cell !important;
+            text-align: center;
+            font-weight: 600;
+        }
+
+        /* Show all other columns in print: # | Name | ID | Intake | Section | Attendance % */
+        .text-center {
+            text-align: center;
+        }
+
+        /* Hide color badges in print, show text only */
+        td span {
+            background: none !important;
+            color: #000 !important;
+            padding: 0 !important;
+            border-radius: 0 !important;
+        }
+
+        .text-gray-600 {
+            color: #000;
+        }
+
+        .text-blue-600 {
+            color: #000;
+            font-weight: bold;
+        }
+    }
+</style>
+{% endblock %}

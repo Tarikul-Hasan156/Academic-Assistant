@@ -1,15 +1,20 @@
 from django.shortcuts import render, redirect
 from django.contrib.auth import authenticate, login, logout, update_session_auth_hash
 from django.contrib.auth.models import User
-from .forms import StudentRegisterForm, FacultyRegisterForm
+from .forms import StudentRegisterForm, FacultyRegisterForm, ClassroomBookingForm, AttendanceForm, AttendanceRecordForm
 from django.contrib import messages
-from .models import Student, Faculty, ClassRoutine
+from .models import Student, Faculty, ClassRoutine, Classroom, ClassroomBooking, Attendance, AttendanceRecord
 from django.contrib.auth.decorators import login_required
 from django.core.mail import send_mail
 from django.conf import settings
 import random
 import string
 from django.core.cache import cache
+from django.http import JsonResponse
+from django.db.models import Q
+from datetime import datetime, date, timedelta
+from django.utils import timezone
+from django.views.decorators.http import require_http_methods
 
 def home(request):
     return render(request, 'home.html')
@@ -516,3 +521,496 @@ def faculty_change_password(request):
         return redirect('faculty-profile')
     
     return render(request, 'faculty_change_password.html')
+
+
+# ======================== CLASSROOM BOOKING VIEWS ========================
+
+@login_required
+def classroom_booking_dashboard(request):
+    """Faculty dashboard for booking classrooms"""
+    # Check if user is faculty
+    if not hasattr(request.user, 'faculty'):
+        messages.error(request, 'Only faculty members can access this page.')
+        return redirect('dashboard')
+    
+    faculty = request.user.faculty
+    booking_date = request.GET.get('booking_date')
+    building = request.GET.get('building')
+    
+    # Mark bookings as expired if necessary
+    _update_expired_bookings()
+    
+    # Get all classrooms
+    all_classrooms = Classroom.objects.all()
+    
+    if building:
+        all_classrooms = all_classrooms.filter(building=building)
+    
+    # Filter available classrooms based on date
+    available_classrooms = all_classrooms
+    booked_classrooms = []
+    
+    if booking_date:
+        # Find all classrooms booked on this date
+        booked_classroom_ids = ClassroomBooking.objects.filter(
+            booking_date=booking_date,
+            status__in=['CONFIRMED', 'PENDING', 'ONGOING']
+        ).values_list('classroom_id', flat=True).distinct()
+        
+        booked_classrooms = all_classrooms.filter(id__in=booked_classroom_ids)
+        available_classrooms = all_classrooms.exclude(id__in=booked_classroom_ids)
+    
+    # Get faculty's bookings
+    faculty_bookings = ClassroomBooking.objects.filter(faculty=faculty).select_related('classroom').order_by('-booking_date', '-start_time')
+    
+    # Get faculty's bookings for the selected date if specified
+    faculty_bookings_for_date = faculty_bookings
+    if booking_date:
+        faculty_bookings_for_date = faculty_bookings.filter(booking_date=booking_date)
+    
+    context = {
+        'available_classrooms': available_classrooms,
+        'booked_classrooms': booked_classrooms,
+        'faculty_bookings': faculty_bookings,
+        'faculty_bookings_for_date': faculty_bookings_for_date,
+        'booking_date': booking_date,
+        'building': building,
+        'building_choices': Classroom.BUILDING_CHOICES,
+    }
+    
+    return render(request, 'classroom_booking_dashboard.html', context)
+
+
+@login_required
+def book_classroom(request):
+    """View for faculty to book a classroom"""
+    # Check if user is faculty
+    if not hasattr(request.user, 'faculty'):
+        messages.error(request, 'Only faculty members can access this page.')
+        return redirect('dashboard')
+    
+    faculty = request.user.faculty
+    classroom_id = request.GET.get('classroom_id')
+    booking_date = request.GET.get('booking_date')
+    
+    if request.method == 'POST':
+        form = ClassroomBookingForm(request.POST)
+        if form.is_valid():
+            booking = form.save(commit=False)
+            booking.faculty = faculty
+            booking.status = 'CONFIRMED'
+            booking.save()
+            messages.success(request, 'Classroom booked successfully!')
+            return redirect('classroom-booking-dashboard')
+        else:
+            for field, errors in form.errors.items():
+                for error in errors:
+                    messages.error(request, f"{field}: {error}")
+    else:
+        # Pre-fill form if classroom_id and booking_date are provided
+        initial_data = {}
+        if classroom_id:
+            try:
+                initial_data['classroom'] = Classroom.objects.get(id=classroom_id)
+            except Classroom.DoesNotExist:
+                pass
+        if booking_date:
+            initial_data['booking_date'] = booking_date
+        
+        form = ClassroomBookingForm(initial=initial_data)
+    
+    # Get all classrooms
+    classrooms = Classroom.objects.all()
+    
+    context = {
+        'form': form,
+        'classrooms': classrooms,
+    }
+    
+    return render(request, 'book_classroom.html', context)
+
+
+@login_required
+def view_classroom_availability(request):
+    """API endpoint to check classroom availability"""
+    # Check if user is faculty
+    if not hasattr(request.user, 'faculty'):
+        return JsonResponse({'error': 'Unauthorized'}, status=403)
+    
+    booking_date = request.GET.get('booking_date')
+    classroom_id = request.GET.get('classroom_id')
+    
+    if not booking_date or not classroom_id:
+        return JsonResponse({'error': 'Missing required parameters'}, status=400)
+    
+    try:
+        classroom = Classroom.objects.get(id=classroom_id)
+    except Classroom.DoesNotExist:
+        return JsonResponse({'error': 'Classroom not found'}, status=404)
+    
+    # Mark bookings as expired if necessary
+    _update_expired_bookings()
+    
+    # Get bookings for the selected date
+    bookings = ClassroomBooking.objects.filter(
+        classroom=classroom,
+        booking_date=booking_date,
+        status__in=['CONFIRMED', 'PENDING', 'ONGOING']
+    ).order_by('start_time')
+    
+    booked_slots = [
+        {
+            'start_time': booking.start_time.strftime('%H:%M'),
+            'end_time': booking.end_time.strftime('%H:%M'),
+            'faculty': booking.faculty.name,
+        }
+        for booking in bookings
+    ]
+    
+    return JsonResponse({
+        'classroom': {
+            'id': classroom.id,
+            'name': f"{classroom.building} - Room {classroom.room_number}",
+            'capacity': classroom.capacity,
+        },
+        'date': booking_date,
+        'booked_slots': booked_slots,
+    })
+
+
+@login_required
+def cancel_classroom_booking(request, booking_id):
+    """Cancel a classroom booking"""
+    # Check if user is faculty
+    if not hasattr(request.user, 'faculty'):
+        messages.error(request, 'Only faculty members can access this page.')
+        return redirect('dashboard')
+    
+    faculty = request.user.faculty
+    
+    try:
+        booking = ClassroomBooking.objects.get(id=booking_id, faculty=faculty)
+    except ClassroomBooking.DoesNotExist:
+        messages.error(request, 'Booking not found or you do not have permission to cancel it.')
+        return redirect('classroom-booking-dashboard')
+    
+    # Don't allow cancellation if already completed
+    if booking.status in ['COMPLETED', 'CANCELLED']:
+        messages.error(request, f'Cannot cancel a {booking.status.lower()} booking.')
+        return redirect('classroom-booking-dashboard')
+    
+    booking.status = 'CANCELLED'
+    booking.save()
+    messages.success(request, 'Classroom booking cancelled successfully!')
+    return redirect('classroom-booking-dashboard')
+
+
+@login_required
+def my_classroom_bookings(request):
+    """View all bookings made by the logged-in faculty"""
+    # Check if user is faculty
+    if not hasattr(request.user, 'faculty'):
+        messages.error(request, 'Only faculty members can access this page.')
+        return redirect('dashboard')
+    
+    faculty = request.user.faculty
+    
+    # Mark bookings as expired if necessary
+    _update_expired_bookings()
+    
+    # Get faculty's bookings, grouped by status
+    bookings = ClassroomBooking.objects.filter(faculty=faculty).select_related('classroom').order_by('-booking_date', '-start_time')
+    
+    # Separate bookings by status
+    upcoming_bookings = bookings.filter(status__in=['CONFIRMED', 'PENDING']).order_by('booking_date', 'start_time')
+    completed_bookings = bookings.filter(status='COMPLETED').order_by('-booking_date', '-start_time')
+    cancelled_bookings = bookings.filter(status='CANCELLED').order_by('-booking_date', '-start_time')
+    
+    context = {
+        'upcoming_bookings': upcoming_bookings,
+        'completed_bookings': completed_bookings,
+        'cancelled_bookings': cancelled_bookings,
+    }
+    
+    return render(request, 'my_classroom_bookings.html', context)
+
+
+def _update_expired_bookings():
+    """Update bookings that have expired (end_time passed)"""
+    
+    now = timezone.now()
+    
+    # Get all CONFIRMED bookings
+    bookings = ClassroomBooking.objects.filter(
+        status__in=['CONFIRMED', 'PENDING', 'ONGOING']
+    )
+    
+    for booking in bookings:
+        # Create timezone-aware datetime for booking end
+        booking_end_naive = datetime.combine(booking.booking_date, booking.end_time)
+        booking_end = timezone.make_aware(booking_end_naive)
+        
+        # Create timezone-aware datetime for booking start
+        booking_start_naive = datetime.combine(booking.booking_date, booking.start_time)
+        booking_start = timezone.make_aware(booking_start_naive)
+        
+        # If end time has passed, mark as COMPLETED
+        if now > booking_end and booking.status != 'COMPLETED':
+            booking.status = 'COMPLETED'
+            booking.save()
+        
+        # If currently ongoing, mark as ONGOING
+        elif booking_start <= now <= booking_end and booking.status != 'ONGOING':
+            booking.status = 'ONGOING'
+            booking.save()
+
+
+# ====================== ATTENDANCE VIEWS ======================
+
+@login_required
+def attendance_dashboard(request):
+    """Faculty dashboard for managing attendance"""
+    try:
+        faculty = Faculty.objects.get(user=request.user)
+    except Faculty.DoesNotExist:
+        messages.error(request, 'Access denied. Only teachers can access this feature.')
+        return redirect('home')
+    
+    # Get faculty's class routines (available courses)
+    class_routines = ClassRoutine.objects.filter(faculty=faculty).distinct()
+    
+    context = {
+        'class_routines': class_routines,
+        'page_title': 'Attendance Management',
+    }
+    
+    return render(request, 'attendance_dashboard.html', context)
+
+
+@login_required
+def attendance_mark(request):
+    """Mark attendance for a class"""
+    try:
+        faculty = Faculty.objects.get(user=request.user)
+    except Faculty.DoesNotExist:
+        messages.error(request, 'Access denied. Only teachers can access this feature.')
+        return redirect('home')
+    
+    if request.method == 'POST':
+        form = AttendanceForm(request.POST, faculty=faculty)
+        if form.is_valid():
+            class_routine = form.cleaned_data['class_routine']
+            attendance_date = form.cleaned_data['attendance_date']
+            intake = form.cleaned_data['intake']
+            section = form.cleaned_data['section']
+            num_classes = form.cleaned_data['num_classes']
+            
+            # Check if attendance already exists for this session
+            try:
+                attendance = Attendance.objects.get(
+                    faculty=faculty,
+                    class_routine=class_routine,
+                    attendance_date=attendance_date
+                )
+                messages.info(request, 'Attendance record found. Updating...')
+            except Attendance.DoesNotExist:
+                attendance = Attendance(
+                    faculty=faculty,
+                    class_routine=class_routine,
+                    attendance_date=attendance_date,
+                    intake=intake,
+                    section=section,
+                    num_classes=num_classes
+                )
+                attendance.save()
+            
+            return redirect('attendance-mark-students', attendance_id=attendance.id)
+    else:
+        form = AttendanceForm(faculty=faculty)
+    
+    # Get faculty's courses explicitly for template rendering
+    faculty_courses = ClassRoutine.objects.filter(faculty=faculty).order_by('class_code')
+    
+    context = {
+        'form': form,
+        'faculty_courses': faculty_courses,
+        'page_title': 'Mark Attendance - Select Course',
+    }
+    
+    return render(request, 'attendance_mark.html', context)
+
+
+@login_required
+def attendance_mark_students(request, attendance_id):
+    """Mark attendance for individual students"""
+    try:
+        faculty = Faculty.objects.get(user=request.user)
+    except Faculty.DoesNotExist:
+        messages.error(request, 'Access denied. Only teachers can access this feature.')
+        return redirect('home')
+    
+    try:
+        attendance = Attendance.objects.get(id=attendance_id, faculty=faculty)
+    except Attendance.DoesNotExist:
+        messages.error(request, 'Attendance record not found.')
+        return redirect('attendance-dashboard')
+    
+    # Check if attendance is locked for modification
+    if attendance.status == 'SUBMITTED' and not attendance.can_modify():
+        messages.error(request, 'Attendance record cannot be modified. Modification window has expired (2 hours).')
+        return redirect('attendance-history')
+    
+    # Get students in this course/intake/section
+    students = Student.objects.filter(
+        department=attendance.class_routine.department,
+        intake=attendance.intake,
+        section=attendance.section
+    ).order_by('student_id')
+    
+    if request.method == 'POST':
+        # Process attendance marking
+        marked_count = 0
+        for student in students:
+            is_present = request.POST.get(f'student_{student.id}') == 'on'
+            record, created = AttendanceRecord.objects.update_or_create(
+                attendance=attendance,
+                student=student,
+                defaults={'is_present': is_present}
+            )
+            marked_count += 1
+        
+        # Update status if first time marking
+        if attendance.status == 'DRAFT':
+            attendance.status = 'SUBMITTED'
+            attendance.submitted_at = timezone.now()
+            attendance.save()
+        
+        messages.success(request, f'Attendance marked for {marked_count} students successfully!')
+        return redirect('attendance-history')
+    
+    # Get existing records
+    attendance_records = AttendanceRecord.objects.filter(attendance=attendance)
+    record_dict = {record.student_id: record.is_present for record in attendance_records}
+    
+    # Prepare student data with attendance status
+    student_data = []
+    for student in students:
+        student_data.append({
+            'student': student,
+            'is_present': record_dict.get(student.id, False),
+        })
+    
+    context = {
+        'attendance': attendance,
+        'student_data': student_data,
+        'total_students': len(students),
+        'total_present': sum(1 for s in student_data if s['is_present']),
+        'can_modify': attendance.can_modify() if attendance.status == 'SUBMITTED' else True,
+        'modification_locked': attendance.is_modification_locked(),
+        'page_title': 'Mark Attendance - Students',
+    }
+    
+    return render(request, 'attendance_mark_students.html', context)
+
+
+@login_required
+def attendance_history(request):
+    """View attendance history"""
+    try:
+        faculty = Faculty.objects.get(user=request.user)
+    except Faculty.DoesNotExist:
+        messages.error(request, 'Access denied. Only teachers can access this feature.')
+        return redirect('home')
+    
+    # Get all attendance records for this faculty
+    attendances = Attendance.objects.filter(faculty=faculty).order_by('-attendance_date')
+    
+    # Filtering
+    class_routine_id = request.GET.get('class_routine')
+    if class_routine_id:
+        attendances = attendances.filter(class_routine_id=class_routine_id)
+    
+    date_from = request.GET.get('date_from')
+    if date_from:
+        attendances = attendances.filter(attendance_date__gte=date_from)
+    
+    date_to = request.GET.get('date_to')
+    if date_to:
+        attendances = attendances.filter(attendance_date__lte=date_to)
+    
+    # Get class routines for filter dropdown
+    class_routines = ClassRoutine.objects.filter(faculty=faculty).distinct()
+    
+    context = {
+        'attendances': attendances,
+        'class_routines': class_routines,
+        'page_title': 'Attendance History',
+    }
+    
+    return render(request, 'attendance_history.html', context)
+
+
+@login_required
+def attendance_view_details(request, attendance_id):
+    """View detailed attendance for a session"""
+    try:
+        faculty = Faculty.objects.get(user=request.user)
+    except Faculty.DoesNotExist:
+        messages.error(request, 'Access denied. Only teachers can access this feature.')
+        return redirect('home')
+    
+    try:
+        attendance = Attendance.objects.get(id=attendance_id, faculty=faculty)
+    except Attendance.DoesNotExist:
+        messages.error(request, 'Attendance record not found.')
+        return redirect('attendance-history')
+    
+    # Get all attendance records for this session
+    records = AttendanceRecord.objects.filter(attendance=attendance).select_related('student')
+    
+    # Calculate individual attendance percentage for each student
+    records_with_percentage = []
+    for record in records:
+        # Get all attendance records for this student in this course/class
+        student_total_records = AttendanceRecord.objects.filter(
+            attendance__class_routine=attendance.class_routine,
+            attendance__faculty=faculty,
+            student=record.student
+        ).count()
+        
+        student_present = AttendanceRecord.objects.filter(
+            attendance__class_routine=attendance.class_routine,
+            attendance__faculty=faculty,
+            student=record.student,
+            is_present=True
+        ).count()
+        
+        attendance_pct = (student_present / student_total_records * 100) if student_total_records > 0 else 0
+        
+        records_with_percentage.append({
+            'record': record,
+            'present_count': student_present,
+            'total_count': student_total_records,
+            'attendance_percentage': attendance_pct
+        })
+    
+    # Statistics for this session
+    total_students = records.count()
+    present_count = records.filter(is_present=True).count()
+    absent_count = total_students - present_count
+    attendance_percentage = (present_count / total_students * 100) if total_students > 0 else 0
+    
+    context = {
+        'attendance': attendance,
+        'records': records,
+        'records_with_percentage': records_with_percentage,
+        'total_students': total_students,
+        'present_count': present_count,
+        'absent_count': absent_count,
+        'attendance_percentage': attendance_percentage,
+        'can_modify': attendance.can_modify() if attendance.status == 'SUBMITTED' else True,
+        'modification_locked': attendance.is_modification_locked(),
+        'page_title': 'Attendance Details',
+    }
+    
+    return render(request, 'attendance_view_details.html', context)

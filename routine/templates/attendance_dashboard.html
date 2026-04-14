@@ -1,0 +1,117 @@
+{% extends 'base.html' %}
+
+{% block title %}Attendance Management - Academic Assistant{% endblock %}
+
+{% block content %}
+<div class="min-h-screen bg-gray-50 py-12 px-4 sm:px-6 lg:px-8">
+    <div class="max-w-7xl mx-auto">
+        <!-- Page Header -->
+        <div class="mb-8">
+            <h1 class="text-3xl font-bold text-gray-900">Attendance Management</h1>
+            <p class="text-gray-600 mt-2">Mark and manage student attendance for your courses</p>
+        </div>
+
+        <!-- Quick Actions -->
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-6 mb-8">
+            <!-- Mark New Attendance Card -->
+            <div class="bg-white rounded-lg shadow-md p-6 hover:shadow-lg transition-shadow">
+                <div class="flex items-center justify-between">
+                    <div>
+                        <h3 class="text-xl font-semibold text-gray-900">Mark Attendance</h3>
+                        <p class="text-gray-600 text-sm mt-2">Record attendance for today or select a specific date</p>
+                    </div>
+                    <div class="bg-blue-100 p-3 rounded-lg">
+                        <svg class="w-8 h-8 text-blue-600" fill="currentColor" viewBox="0 0 20 20">
+                            <path d="M9 2a1 1 0 000 2h2a1 1 0 100-2H9z"></path>
+                            <path fill-rule="evenodd" d="M4 5a2 2 0 012-2 1 1 0 000 2H3a1 1 0 00-1 1v10a1 1 0 001 1h14a1 1 0 001-1V6a1 1 0 00-1-1h3a1 1 0 000-2h-2a2 2 0 00-2 2v1H4V5zm12 6a1 1 0 100 2h.01a1 1 0 100-2H16z" clip-rule="evenodd"></path>
+                        </svg>
+                    </div>
+                </div>
+                <a href="{% url 'attendance-mark' %}" class="inline-block mt-4 px-6 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors font-medium">
+                    Start Marking
+                </a>
+            </div>
+
+            <!-- View History Card -->
+            <div class="bg-white rounded-lg shadow-md p-6 hover:shadow-lg transition-shadow">
+                <div class="flex items-center justify-between">
+                    <div>
+                        <h3 class="text-xl font-semibold text-gray-900">View History</h3>
+                        <p class="text-gray-600 text-sm mt-2">View, edit, or print attendance records</p>
+                    </div>
+                    <div class="bg-green-100 p-3 rounded-lg">
+                        <svg class="w-8 h-8 text-green-600" fill="currentColor" viewBox="0 0 20 20">
+                            <path d="M9 2a1 1 0 000 2h2a1 1 0 100-2H9z"></path>
+                            <path fill-rule="evenodd" d="M4 5a2 2 0 012-2 1 1 0 000 2H3a1 1 0 00-1 1v10a1 1 0 001 1h14a1 1 0 001-1V6a1 1 0 00-1-1h3a1 1 0 000-2h-2a2 2 0 00-2 2v1H4V5z" clip-rule="evenodd"></path>
+                        </svg>
+                    </div>
+                </div>
+                <a href="{% url 'attendance-history' %}" class="inline-block mt-4 px-6 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 transition-colors font-medium">
+                    View Records
+                </a>
+            </div>
+        </div>
+
+        <!-- Your Courses Section -->
+        <div class="bg-white rounded-lg shadow-md p-6">
+            <h2 class="text-2xl font-bold text-gray-900 mb-6">Your Courses</h2>
+            
+            {% if class_routines %}
+                <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                    {% for routine in class_routines %}
+                        <div class="border border-gray-200 rounded-lg p-4 hover:border-blue-500 transition-colors">
+                            <h3 class="font-semibold text-gray-900">{{ routine.class_code }}</h3>
+                            <p class="text-sm text-gray-600 mt-2">
+                                <span class="font-medium">Department:</span> {{ routine.department }}
+                            </p>
+                            <p class="text-sm text-gray-600">
+                                <span class="font-medium">Timings:</span> {{ routine.start_time }} - {{ routine.end_time }}
+                            </p>
+                            <p class="text-sm text-gray-600">
+                                <span class="font-medium">Day:</span> {{ routine.day_name }}
+                            </p>
+                            <p class="text-sm text-gray-600">
+                                <span class="font-medium">Building:</span> {{ routine.build_no }}
+                            </p>
+                            <p class="text-sm text-gray-600">
+                                <span class="font-medium">Room:</span> {{ routine.room_no }}
+                            </p>
+                        </div>
+                    {% endfor %}
+                </div>
+            {% else %}
+                <div class="bg-gray-50 border border-gray-200 rounded-lg p-8 text-center">
+                    <svg class="w-12 h-12 text-gray-400 mx-auto mb-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6v6m0 0v6m0-6h6m0 0h6"></path>
+                    </svg>
+                    <h3 class="text-gray-900 font-medium text-lg">No courses assigned</h3>
+                    <p class="text-gray-600 text-sm mt-2">You don't have any courses assigned yet. Contact the administrator.</p>
+                </div>
+            {% endif %}
+        </div>
+
+        <!-- Information Section -->
+        <div class="mt-8 bg-blue-50 border border-blue-200 rounded-lg p-6">
+            <h3 class="text-lg font-semibold text-blue-900 mb-4">Important Information</h3>
+            <ul class="space-y-2 text-blue-800 text-sm">
+                <li class="flex items-start">
+                    <span class="inline-block w-2 h-2 rounded-full bg-blue-600 mt-2 mr-3 flex-shrink-0"></span>
+                    <span>After marking attendance, you can modify it for up to 2 hours</span>
+                </li>
+                <li class="flex items-start">
+                    <span class="inline-block w-2 h-2 rounded-full bg-blue-600 mt-2 mr-3 flex-shrink-0"></span>
+                    <span>After 2 hours, attendance records cannot be modified</span>
+                </li>
+                <li class="flex items-start">
+                    <span class="inline-block w-2 h-2 rounded-full bg-blue-600 mt-2 mr-3 flex-shrink-0"></span>
+                    <span>You can view and print attendance history anytime</span>
+                </li>
+                <li class="flex items-start">
+                    <span class="inline-block w-2 h-2 rounded-full bg-blue-600 mt-2 mr-3 flex-shrink-0"></span>
+                    <span>Use the browser's print function (Ctrl+P) to save as PDF</span>
+                </li>
+            </ul>
+        </div>
+    </div>
+</div>
+{% endblock %}

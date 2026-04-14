@@ -171,6 +171,28 @@
                 setTimeout(() => container.remove(), 500);
             }
         }, 4000);
+
+        // Password visibility toggle
+        function togglePasswordVisibility(inputId, toggleBtnId) {
+            const passwordInput = document.getElementById(inputId);
+            const toggleBtn = document.getElementById(toggleBtnId);
+            
+            if (passwordInput) {
+                if (passwordInput.type === 'password') {
+                    passwordInput.type = 'text';
+                    if (toggleBtn) {
+                        toggleBtn.classList.remove('fa-eye');
+                        toggleBtn.classList.add('fa-eye-slash');
+                    }
+                } else {
+                    passwordInput.type = 'password';
+                    if (toggleBtn) {
+                        toggleBtn.classList.remove('fa-eye-slash');
+                        toggleBtn.classList.add('fa-eye');
+                    }
+                }
+            }
+        }
     </script>
 </body>
 </html>

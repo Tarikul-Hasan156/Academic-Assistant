@@ -51,11 +51,25 @@
             <p class="text-purple-100 text-sm">View class schedules</p>
         </div>
 
+        {% if is_faculty %}
+        <div onclick="toggleSection('classroom')" class="bg-gradient-to-br from-cyan-500 to-cyan-600 text-white p-6 rounded-xl shadow-lg hover:shadow-2xl transform hover:scale-105 transition cursor-pointer">
+            <i class="fas fa-door-open text-3xl mb-3"></i>
+            <h3 class="text-lg font-bold">Book Classroom</h3>
+            <p class="text-cyan-100 text-sm">Reserve a classroom</p>
+        </div>
+
+        <a href="{% url 'attendance-dashboard' %}" class="bg-gradient-to-br from-indigo-500 to-indigo-600 text-white p-6 rounded-xl shadow-lg hover:shadow-2xl transform hover:scale-105 transition block">
+            <i class="fas fa-clipboard-check text-3xl mb-3"></i>
+            <h3 class="text-lg font-bold">Manage Attendance</h3>
+            <p class="text-indigo-100 text-sm">Mark student attendance</p>
+        </a>
+        {% else %}
         <div onclick="openContactPopup()" class="bg-gradient-to-br from-orange-500 to-orange-600 text-white p-6 rounded-xl shadow-lg hover:shadow-2xl transform hover:scale-105 transition cursor-pointer">
             <i class="fas fa-question-circle text-3xl mb-3"></i>
             <h3 class="text-lg font-bold">Need Help?</h3>
             <p class="text-orange-100 text-sm">Contact support</p>
         </div>
+        {% endif %}
     </div>
 
     <!-- Main Content Area -->
@@ -164,6 +178,77 @@
                     </form>
                 </div>
             </div>
+
+            <!-- Classroom Booking Form (Faculty Only) -->
+            {% if is_faculty %}
+            <div id="classroom" class="hidden">
+                <div class="bg-white rounded-2xl shadow-lg p-8 border-t-4 border-cyan-600">
+                    <h3 class="text-2xl font-bold text-slate-900 mb-6 flex items-center space-x-3">
+                        <div class="w-10 h-10 bg-cyan-600 rounded-lg flex items-center justify-center">
+                            <i class="fas fa-door-open text-white"></i>
+                        </div>
+                        <span>Book a Classroom for Extra Class</span>
+                    </h3>
+                    
+                    <div class="bg-cyan-50 border border-cyan-200 p-4 rounded-lg mb-6">
+                        <p class="text-cyan-800 text-sm">
+                            <i class="fas fa-info-circle text-cyan-600"></i>
+                            Find and reserve available classrooms for your extra classes. Select a date to view available rooms.
+                        </p>
+                    </div>
+                    
+                    <div class="space-y-5">
+                        <div>
+                            <label class="block text-sm font-semibold text-slate-700 mb-2 flex items-center gap-2">
+                                <i class="fas fa-calendar text-cyan-600"></i>
+                                Select Date to View Available Classrooms
+                            </label>
+                            <input type="date" id="classroom_date" class="w-full px-4 py-3 border border-slate-300 rounded-lg focus:outline-none focus:border-cyan-500 focus:ring-2 focus:ring-cyan-200 transition">
+                        </div>
+                        
+                        <div>
+                            <label class="block text-sm font-semibold text-slate-700 mb-2 flex items-center gap-2">
+                                <i class="fas fa-building text-cyan-600"></i>
+                                Filter by Building (Optional)
+                            </label>
+                            <select id="classroom_building" class="w-full px-4 py-3 border border-slate-300 rounded-lg focus:outline-none focus:border-cyan-500 focus:ring-2 focus:ring-cyan-200 transition">
+                                <option value="">-- All Buildings --</option>
+                                <option value="B-1">B-1</option>
+                                <option value="B-2">B-2</option>
+                                <option value="B-3">B-3</option>
+                                <option value="B-4">B-4</option>
+                            </select>
+                        </div>
+                        
+                        <button type="button" onclick="goToClassroomBooking()" class="w-full bg-gradient-to-r from-cyan-600 to-cyan-700 hover:from-cyan-700 hover:to-cyan-800 text-white font-bold py-3 rounded-lg transition transform hover:scale-105 flex items-center justify-center gap-2">
+                            <i class="fas fa-search"></i> View Classrooms & Book
+                        </button>
+                    </div>
+                    
+                    <div class="mt-6 pt-6 border-t border-slate-200">
+                        <h4 class="font-bold text-slate-900 mb-3">What happens next?</h4>
+                        <ul class="space-y-2 text-sm text-slate-700">
+                            <li class="flex items-center gap-2">
+                                <span class="bg-cyan-600 text-white rounded-full w-6 h-6 flex items-center justify-center text-xs font-bold">1</span>
+                                <span>Select a date and optionally filter by building</span>
+                            </li>
+                            <li class="flex items-center gap-2">
+                                <span class="bg-cyan-600 text-white rounded-full w-6 h-6 flex items-center justify-center text-xs font-bold">2</span>
+                                <span>View available (green) and booked (red) classrooms</span>
+                            </li>
+                            <li class="flex items-center gap-2">
+                                <span class="bg-cyan-600 text-white rounded-full w-6 h-6 flex items-center justify-center text-xs font-bold">3</span>
+                                <span>Click "Book Now" on your preferred classroom</span>
+                            </li>
+                            <li class="flex items-center gap-2">
+                                <span class="bg-cyan-600 text-white rounded-full w-6 h-6 flex items-center justify-center text-xs font-bold">4</span>
+                                <span>Fill in time and details, then confirm booking</span>
+                            </li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+            {% endif %}
 
             <!-- Student Search Results -->
             <div id="student-result" class="mt-6">
@@ -488,13 +573,13 @@
                     <i class="fas fa-envelope text-orange-600"></i>
                     Contact Methods
                 </h3>
-                <a href="mailto:support@academicassistant.edu" class="block bg-blue-50 hover:bg-blue-100 border border-blue-200 rounded-lg p-3 transition">
+                <a href="mailto:tarikulhasandipu.com" class="block bg-blue-50 hover:bg-blue-100 border border-blue-200 rounded-lg p-3 transition">
                     <p class="text-xs font-semibold text-blue-600 uppercase">Email</p>
-                    <p class="text-sm text-slate-700 font-semibold">support@academicassistant.edu</p>
+                    <p class="text-sm text-slate-700 font-semibold">tarikulhasandipu@gmail.com</p>
                 </a>
                 <a href="tel:+1234567890" class="block bg-green-50 hover:bg-green-100 border border-green-200 rounded-lg p-3 transition">
                     <p class="text-xs font-semibold text-green-600 uppercase">Phone</p>
-                    <p class="text-sm text-slate-700 font-semibold">+1 (234) 567-890</p>
+                    <p class="text-sm text-slate-700 font-semibold">01919169803</p>
                 </a>
                 <a href="#" class="block bg-purple-50 hover:bg-purple-100 border border-purple-200 rounded-lg p-3 transition">
                     <p class="text-xs font-semibold text-purple-600 uppercase">Live Chat</p>
@@ -557,7 +642,7 @@
     });
 
     function toggleSection(id) {
-        const sections = ['student', 'faculty', 'routine'];
+        const sections = ['student', 'faculty', 'routine', 'classroom'];
         const results = ['student-result', 'faculty-result', 'routine-result'];
 
         sections.forEach(section => {
@@ -582,6 +667,22 @@
             const newUrl = window.location.protocol + "//" + window.location.host + window.location.pathname;
             window.history.pushState({ path: newUrl }, '', newUrl);
         }
+    }
+
+    function goToClassroomBooking() {
+        const date = document.getElementById('classroom_date').value;
+        const building = document.getElementById('classroom_building').value;
+
+        if (!date) {
+            alert('Please select a date');
+            return;
+        }
+
+        let url = `{% url 'classroom-booking-dashboard' %}?booking_date=${date}`;
+        if (building) {
+            url += `&building=${building}`;
+        }
+        window.location.href = url;
     }
 </script>
 

@@ -1,0 +1,143 @@
+{% extends 'base.html' %}
+
+{% block title %}Mark Attendance - Academic Assistant{% endblock %}
+
+{% block content %}
+<div class="min-h-screen bg-gray-50 py-12 px-4 sm:px-6 lg:px-8">
+    <div class="max-w-2xl mx-auto">
+        <!-- Page Header -->
+        <div class="mb-8">
+            <a href="{% url 'attendance-dashboard' %}" class="text-blue-600 hover:text-blue-700 mb-4 inline-flex items-center">
+                <svg class="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7"></path>
+                </svg>
+                Back to Dashboard
+            </a>
+            <h1 class="text-3xl font-bold text-gray-900">Mark Attendance</h1>
+            <p class="text-gray-600 mt-2">Select course and date to mark attendance</p>
+        </div>
+
+        <!-- Form Card -->
+        <div class="bg-white rounded-lg shadow-md p-8">
+            <form method="post" class="space-y-6">
+                {% csrf_token %}
+
+                <!-- Error Messages -->
+                {% if form.non_field_errors %}
+                    <div class="bg-red-50 border border-red-200 text-red-700 px-4 py-3 rounded-lg">
+                        {% for error in form.non_field_errors %}
+                            <p>{{ error }}</p>
+                        {% endfor %}
+                    </div>
+                {% endif %}
+
+                <!-- Course Selection -->
+                <div>
+                    <label for="{{ form.class_routine.id_for_label }}" class="block text-sm font-medium text-gray-900 mb-2">
+                        Course <span class="text-red-600">*</span>
+                    </label>
+                    <select name="class_routine" id="{{ form.class_routine.id_for_label }}" class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent" required>
+                        <option value="">-- Select a Course --</option>
+                        {% if faculty_courses %}
+                            {% for routine in faculty_courses %}
+                                <option value="{{ routine.id }}" {% if form.class_routine.value == routine.id|stringformat:"s" %}selected{% endif %}>
+                                    {{ routine.class_code }} ({{ routine.day_name }} {{ routine.start_time }}-{{ routine.end_time }})
+                                </option>
+                            {% endfor %}
+                        {% else %}
+                            <option value="" disabled>No courses assigned to you</option>
+                        {% endif %}
+                    </select>
+                    {% if form.class_routine.errors %}
+                        <p class="text-red-600 text-sm mt-1">{{ form.class_routine.errors.0 }}</p>
+                    {% endif %}
+                    {% if not faculty_courses %}
+                        <p class="text-orange-600 text-sm mt-2">Note: No courses are assigned to you yet. Please contact the administrator.</p>
+                    {% endif %}
+                </div>
+
+                <!-- Attendance Date -->
+                <div>
+                    <label for="{{ form.attendance_date.id_for_label }}" class="block text-sm font-medium text-gray-900 mb-2">
+                        Attendance Date <span class="text-red-600">*</span>
+                    </label>
+                    <input type="date" name="attendance_date" id="{{ form.attendance_date.id_for_label }}" class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent" required>
+                    {% if form.attendance_date.errors %}
+                        <p class="text-red-600 text-sm mt-1">{{ form.attendance_date.errors.0 }}</p>
+                    {% endif %}
+                </div>
+
+                <!-- Intake -->
+                <div>
+                    <label for="{{ form.intake.id_for_label }}" class="block text-sm font-medium text-gray-900 mb-2">
+                        Intake <span class="text-red-600">*</span>
+                    </label>
+                    <input type="text" name="intake" id="{{ form.intake.id_for_label }}" class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent" placeholder="e.g., 2022" required>
+                    {% if form.intake.errors %}
+                        <p class="text-red-600 text-sm mt-1">{{ form.intake.errors.0 }}</p>
+                    {% endif %}
+                </div>
+
+                <!-- Section -->
+                <div>
+                    <label for="{{ form.section.id_for_label }}" class="block text-sm font-medium text-gray-900 mb-2">
+                        Section <span class="text-red-600">*</span>
+                    </label>
+                    <input type="text" name="section" id="{{ form.section.id_for_label }}" class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent" placeholder="e.g., A" required>
+                    {% if form.section.errors %}
+                        <p class="text-red-600 text-sm mt-1">{{ form.section.errors.0 }}</p>
+                    {% endif %}
+                </div>
+
+                <!-- Number of Classes -->
+                <div>
+                    <label for="{{ form.num_classes.id_for_label }}" class="block text-sm font-medium text-gray-900 mb-2">
+                        Number of Classes <span class="text-red-600">*</span>
+                    </label>
+                    <input type="number" name="num_classes" id="{{ form.num_classes.id_for_label }}" class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent" placeholder="e.g., 1" min="1" required>
+                    {% if form.num_classes.errors %}
+                        <p class="text-red-600 text-sm mt-1">{{ form.num_classes.errors.0 }}</p>
+                    {% endif %}
+                </div>
+
+                <!-- Submit Button -->
+                <div class="flex gap-4 pt-4">
+                    <button type="submit" class="flex-1 bg-blue-600 text-white py-2 rounded-lg hover:bg-blue-700 transition-colors font-medium">
+                        Continue to Mark Attendance
+                    </button>
+                    <a href="{% url 'attendance-dashboard' %}" class="flex-1 bg-gray-200 text-gray-900 py-2 rounded-lg hover:bg-gray-300 transition-colors font-medium text-center">
+                        Cancel
+                    </a>
+                </div>
+            </form>
+        </div>
+
+        <!-- Help Section -->
+        <div class="mt-8 bg-yellow-50 border border-yellow-200 rounded-lg p-6">
+            <h3 class="text-lg font-semibold text-yellow-900 mb-4">Need Help?</h3>
+            <ul class="space-y-2 text-yellow-800 text-sm">
+                <li class="flex items-start">
+                    <span class="inline-block w-2 h-2 rounded-full bg-yellow-600 mt-2 mr-3 flex-shrink-0"></span>
+                    <span><strong>Course:</strong> Select the course for which you want to mark attendance</span>
+                </li>
+                <li class="flex items-start">
+                    <span class="inline-block w-2 h-2 rounded-full bg-yellow-600 mt-2 mr-3 flex-shrink-0"></span>
+                    <span><strong>Date:</strong> Select the date of the class</span>
+                </li>
+                <li class="flex items-start">
+                    <span class="inline-block w-2 h-2 rounded-full bg-yellow-600 mt-2 mr-3 flex-shrink-0"></span>
+                    <span><strong>Intake:</strong> Year of admission (e.g., 2022)</span>
+                </li>
+                <li class="flex items-start">
+                    <span class="inline-block w-2 h-2 rounded-full bg-yellow-600 mt-2 mr-3 flex-shrink-0"></span>
+                    <span><strong>Section:</strong> Section of students (e.g., A, B)</span>
+                </li>
+                <li class="flex items-start">
+                    <span class="inline-block w-2 h-2 rounded-full bg-yellow-600 mt-2 mr-3 flex-shrink-0"></span>
+                    <span><strong>Classes:</strong> How many classes were held</span>
+                </li>
+            </ul>
+        </div>
+    </div>
+</div>
+{% endblock %}

@@ -1,0 +1,241 @@
+{% extends 'base.html' %}
+{% load static %}
+{% block title %}Book Classroom - Faculty{% endblock %}
+{% block content %}
+<div class="container mx-auto px-4 py-8">
+    <!-- Page Header -->
+    <div class="mb-8">
+        <a href="{% url 'classroom-booking-dashboard' %}" class="inline-flex items-center space-x-2 text-blue-600 hover:text-blue-700 mb-4 font-semibold">
+            <i class="fas fa-arrow-left"></i>
+            <span>Back to Booking Dashboard</span>
+        </a>
+        <h1 class="text-4xl font-bold text-slate-900 mb-2">Book a Classroom</h1>
+        <p class="text-gray-600">Reserve a classroom for your extra class session</p>
+    </div>
+
+    <!-- Booking Form Section -->
+    <div class="grid grid-cols-1 lg:grid-cols-3 gap-8">
+        <!-- Form -->
+        <div class="lg:col-span-2">
+            <div class="bg-white rounded-2xl shadow-lg p-8 border-t-4 border-blue-600">
+                <form method="POST" class="space-y-6">
+                    {% csrf_token %}
+                    
+                    <!-- Classroom Selection -->
+                    <div>
+                        <label for="{{ form.classroom.id_for_label }}" class="block text-sm font-bold text-slate-700 mb-2">
+                            <i class="fas fa-door-open text-blue-600"></i> Select Classroom *
+                        </label>
+                        <select name="classroom" id="{{ form.classroom.id_for_label }}" class="w-full px-4 py-3 border-2 border-gray-300 rounded-lg focus:outline-none focus:border-blue-600 transition" required>
+                            <option value="">-- Select a Classroom --</option>
+                            {% for classroom in classrooms %}
+                                <option value="{{ classroom.id }}">
+                                    {{ classroom.building }} - Room {{ classroom.room_number }} (Capacity: {{ classroom.capacity }})
+                                </option>
+                            {% endfor %}
+                        </select>
+                    </div>
+
+                    <!-- Booking Date -->
+                    <div>
+                        <label for="{{ form.booking_date.id_for_label }}" class="block text-sm font-bold text-slate-700 mb-2">
+                            <i class="fas fa-calendar text-blue-600"></i> Booking Date *
+                        </label>
+                        {{ form.booking_date }}
+                        {% if form.booking_date.errors %}
+                            <div class="text-red-600 text-sm mt-1">
+                                {% for error in form.booking_date.errors %}
+                                    <p><i class="fas fa-exclamation-circle"></i> {{ error }}</p>
+                                {% endfor %}
+                            </div>
+                        {% endif %}
+                    </div>
+
+                    <!-- Time Container -->
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                        <!-- Start Time -->
+                        <div>
+                            <label for="{{ form.start_time.id_for_label }}" class="block text-sm font-bold text-slate-700 mb-2">
+                                <i class="fas fa-clock text-blue-600"></i> Start Time *
+                            </label>
+                            {{ form.start_time }}
+                            {% if form.start_time.errors %}
+                                <div class="text-red-600 text-sm mt-1">
+                                    {% for error in form.start_time.errors %}
+                                        <p><i class="fas fa-exclamation-circle"></i> {{ error }}</p>
+                                    {% endfor %}
+                                </div>
+                            {% endif %}
+                        </div>
+
+                        <!-- End Time -->
+                        <div>
+                            <label for="{{ form.end_time.id_for_label }}" class="block text-sm font-bold text-slate-700 mb-2">
+                                <i class="fas fa-hourglass-end text-blue-600"></i> End Time *
+                            </label>
+                            {{ form.end_time }}
+                            {% if form.end_time.errors %}
+                                <div class="text-red-600 text-sm mt-1">
+                                    {% for error in form.end_time.errors %}
+                                        <p><i class="fas fa-exclamation-circle"></i> {{ error }}</p>
+                                    {% endfor %}
+                                </div>
+                            {% endif %}
+                        </div>
+                    </div>
+
+                    <!-- Reason -->
+                    <div>
+                        <label for="{{ form.reason.id_for_label }}" class="block text-sm font-bold text-slate-700 mb-2">
+                            <i class="fas fa-comment text-blue-600"></i> Reason/Purpose (Optional)
+                        </label>
+                        {{ form.reason }}
+                        <p class="text-gray-500 text-xs mt-1">e.g., Extra class, Seminar, Lab session</p>
+                        {% if form.reason.errors %}
+                            <div class="text-red-600 text-sm mt-1">
+                                {% for error in form.reason.errors %}
+                                    <p><i class="fas fa-exclamation-circle"></i> {{ error }}</p>
+                                {% endfor %}
+                            </div>
+                        {% endif %}
+                    </div>
+
+                    <!-- Form Errors -->
+                    {% if form.non_field_errors %}
+                        <div class="bg-red-50 border-l-4 border-red-600 p-4 rounded">
+                            {% for error in form.non_field_errors %}
+                                <p class="text-red-600 font-semibold">
+                                    <i class="fas fa-exclamation-triangle"></i> {{ error }}
+                                </p>
+                            {% endfor %}
+                        </div>
+                    {% endif %}
+
+                    <!-- Buttons -->
+                    <div class="flex space-x-4 pt-6 border-t border-gray-200">
+                        <button type="submit" class="flex-1 bg-gradient-to-r from-blue-600 to-blue-700 hover:from-blue-700 hover:to-blue-800 text-white font-bold py-3 px-6 rounded-lg transition transform hover:scale-105">
+                            <i class="fas fa-check-circle"></i> Book Classroom
+                        </button>
+                        <a href="{% url 'classroom-booking-dashboard' %}" class="flex-1 bg-gray-400 hover:bg-gray-500 text-white font-bold py-3 px-6 rounded-lg transition text-center">
+                            <i class="fas fa-times"></i> Cancel
+                        </a>
+                    </div>
+                </form>
+            </div>
+        </div>
+
+        <!-- Information Panel -->
+        <div class="lg:col-span-1">
+            <!-- Instructions -->
+            <div class="bg-blue-50 rounded-2xl shadow-lg p-6 border-l-4 border-blue-600 mb-6">
+                <h3 class="text-lg font-bold text-blue-900 mb-4 flex items-center space-x-2">
+                    <i class="fas fa-info-circle text-blue-600"></i>
+                    <span>Booking Instructions</span>
+                </h3>
+                <ul class="space-y-3 text-sm text-blue-800">
+                    <li class="flex items-start space-x-2">
+                        <span class="text-blue-600 font-bold">1.</span>
+                        <span>Select an available classroom from the dropdown</span>
+                    </li>
+                    <li class="flex items-start space-x-2">
+                        <span class="text-blue-600 font-bold">2.</span>
+                        <span>Choose the booking date</span>
+                    </li>
+                    <li class="flex items-start space-x-2">
+                        <span class="text-blue-600 font-bold">3.</span>
+                        <span>Set your start and end times</span>
+                    </li>
+                    <li class="flex items-start space-x-2">
+                        <span class="text-blue-600 font-bold">4.</span>
+                        <span>Provide a reason (optional)</span>
+                    </li>
+                    <li class="flex items-start space-x-2">
+                        <span class="text-blue-600 font-bold">5.</span>
+                        <span>Click "Book Classroom" to confirm</span>
+                    </li>
+                </ul>
+            </div>
+
+            <!-- Tips -->
+            <div class="bg-green-50 rounded-2xl shadow-lg p-6 border-l-4 border-green-600 mb-6">
+                <h3 class="text-lg font-bold text-green-900 mb-4 flex items-center space-x-2">
+                    <i class="fas fa-lightbulb text-green-600"></i>
+                    <span>Tips</span>
+                </h3>
+                <ul class="space-y-2 text-sm text-green-800">
+                    <li class="flex items-start space-x-2">
+                        <span><i class="fas fa-check text-green-600"></i></span>
+                        <span>End time must be after start time</span>
+                    </li>
+                    <li class="flex items-start space-x-2">
+                        <span><i class="fas fa-check text-green-600"></i></span>
+                        <span>Overlapping bookings are not allowed</span>
+                    </li>
+                    <li class="flex items-start space-x-2">
+                        <span><i class="fas fa-check text-green-600"></i></span>
+                        <span>Bookings automatically become unavailable after their end time</span>
+                    </li>
+                </ul>
+            </div>
+
+            <!-- Classroom Info Card -->
+            <div class="bg-gradient-to-br from-slate-100 to-slate-200 rounded-2xl shadow-lg p-6 border-t-4 border-slate-600">
+                <h3 class="text-lg font-bold text-slate-900 mb-4 flex items-center space-x-2">
+                    <i class="fas fa-building text-slate-600"></i>
+                    <span>Available Classrooms</span>
+                </h3>
+                <div class="space-y-2 max-h-64 overflow-y-auto">
+                    {% for classroom in classrooms %}
+                        <div class="bg-white rounded p-3 text-sm">
+                            <p class="font-bold text-slate-900">
+                                {{ classroom.building }} - Room {{ classroom.room_number }}
+                            </p>
+                            <p class="text-gray-600">
+                                Capacity: <span class="font-semibold">{{ classroom.capacity }}</span>
+                            </p>
+                        </div>
+                    {% empty %}
+                        <p class="text-gray-600 text-center">No classrooms available</p>
+                    {% endfor %}
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<style>
+    input[type="date"],
+    input[type="time"],
+    select {
+        width: 100%;
+        padding: 0.75rem 1rem;
+        border: 2px solid #d1d5db;
+        border-radius: 0.5rem;
+        font-size: 1rem;
+        transition: all 0.3s;
+    }
+
+    input[type="date"]:focus,
+    input[type="time"]:focus,
+    select:focus {
+        outline: none;
+        border-color: #2563eb;
+        box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.1);
+    }
+
+    input[type="text"] {
+        width: 100%;
+        padding: 0.75rem 1rem;
+        border: 2px solid #d1d5db;
+        border-radius: 0.5rem;
+        font-size: 1rem;
+        transition: all 0.3s;
+    }
+
+    input[type="text"]:focus {
+        outline: none;
+        border-color: #2563eb;
+        box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.1);
+    }
+</style>
+{% endblock %}

@@ -1,0 +1,253 @@
+{% extends 'base.html' %}
+{% load static %}
+{% block title %}My Classroom Bookings - Faculty{% endblock %}
+{% block content %}
+<div class="container mx-auto px-4 py-8">
+    <!-- Page Header -->
+    <div class="mb-8">
+        <a href="{% url 'classroom-booking-dashboard' %}" class="inline-flex items-center space-x-2 text-blue-600 hover:text-blue-700 mb-4 font-semibold">
+            <i class="fas fa-arrow-left"></i>
+            <span>Back to Booking Dashboard</span>
+        </a>
+        <h1 class="text-4xl font-bold text-slate-900 mb-2">My Classroom Bookings</h1>
+        <p class="text-gray-600">View and manage all your classroom reservations</p>
+    </div>
+
+    <!-- Summary Cards -->
+    <div class="grid grid-cols-1 md:grid-cols-4 gap-4 mb-8">
+        <div class="bg-gradient-to-br from-blue-600 to-blue-700 rounded-lg shadow-lg p-6 text-white">
+            <div class="flex items-center justify-between">
+                <div>
+                    <p class="text-blue-100 text-sm">Upcoming</p>
+                    <p class="text-4xl font-bold">{{ upcoming_bookings|length }}</p>
+                </div>
+                <i class="fas fa-calendar-check text-5xl opacity-20"></i>
+            </div>
+        </div>
+
+        <div class="bg-gradient-to-br from-green-600 to-green-700 rounded-lg shadow-lg p-6 text-white">
+            <div class="flex items-center justify-between">
+                <div>
+                    <p class="text-green-100 text-sm">Completed</p>
+                    <p class="text-4xl font-bold">{{ completed_bookings|length }}</p>
+                </div>
+                <i class="fas fa-check-double text-5xl opacity-20"></i>
+            </div>
+        </div>
+
+        <div class="bg-gradient-to-br from-red-600 to-red-700 rounded-lg shadow-lg p-6 text-white">
+            <div class="flex items-center justify-between">
+                <div>
+                    <p class="text-red-100 text-sm">Cancelled</p>
+                    <p class="text-4xl font-bold">{{ cancelled_bookings|length }}</p>
+                </div>
+                <i class="fas fa-times-circle text-5xl opacity-20"></i>
+            </div>
+        </div>
+
+        <div class="bg-gradient-to-br from-purple-600 to-purple-700 rounded-lg shadow-lg p-6 text-white">
+            <div class="flex items-center justify-between">
+                <div>
+                    <p class="text-purple-100 text-sm">Total</p>
+                    <p class="text-4xl font-bold">{{ upcoming_bookings|length|add:completed_bookings|length|add:cancelled_bookings|length }}</p>
+                </div>
+                <i class="fas fa-cube text-5xl opacity-20"></i>
+            </div>
+        </div>
+    </div>
+
+    <!-- Quick Action Button -->
+    <div class="mb-8">
+        <a href="{% url 'book-classroom' %}" class="inline-flex items-center space-x-2 bg-gradient-to-r from-blue-600 to-blue-700 hover:from-blue-700 hover:to-blue-800 text-white font-bold py-3 px-6 rounded-lg transition transform hover:scale-105">
+            <i class="fas fa-plus-circle"></i>
+            <span>Book New Classroom</span>
+        </a>
+    </div>
+
+    <!-- Upcoming Bookings -->
+    {% if upcoming_bookings %}
+    <div class="bg-white rounded-2xl shadow-lg p-6 mb-8 border-t-4 border-blue-600">
+        <h2 class="text-2xl font-bold text-slate-900 mb-4 flex items-center space-x-3">
+            <div class="w-10 h-10 bg-blue-600 rounded-lg flex items-center justify-center">
+                <i class="fas fa-calendar-check text-white"></i>
+            </div>
+            <span>Upcoming Bookings ({{ upcoming_bookings|length }})</span>
+        </h2>
+
+        <div class="overflow-x-auto">
+            <table class="w-full">
+                <thead>
+                    <tr class="border-b-2 border-gray-200">
+                        <th class="text-left py-3 px-4 font-bold text-slate-600">Classroom</th>
+                        <th class="text-left py-3 px-4 font-bold text-slate-600">Date & Time</th>
+                        <th class="text-left py-3 px-4 font-bold text-slate-600">Duration</th>
+                        <th class="text-left py-3 px-4 font-bold text-slate-600">Reason</th>
+                        <th class="text-left py-3 px-4 font-bold text-slate-600">Status</th>
+                        <th class="text-center py-3 px-4 font-bold text-slate-600">Action</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for booking in upcoming_bookings %}
+                    <tr class="border-b border-gray-200 hover:bg-gray-50 transition">
+                        <td class="py-4 px-4 font-semibold text-slate-900">
+                            <div class="flex items-center space-x-2">
+                                <i class="fas fa-door-open text-blue-600"></i>
+                                <span>{{ booking.classroom.building }} - Room {{ booking.classroom.room_number }}</span>
+                            </div>
+                        </td>
+                        <td class="py-4 px-4 text-slate-700">
+                            <div>
+                                <p class="font-semibold">{{ booking.booking_date }}</p>
+                                <p class="text-sm text-gray-600">
+                                    {% now "Y-m-d" as today %}
+                                    {% if booking.booking_date == today %}
+                                        <span class="text-orange-600"><i class="fas fa-star"></i> Today</span>
+                                    {% elif booking.booking_date|add:"00:00:00" > now %}
+                                        Upcoming
+                                    {% endif %}
+                                </p>
+                            </div>
+                        </td>
+                        <td class="py-4 px-4 text-slate-700">
+                            <p class="font-semibold">{{ booking.start_time|time:"H:i" }} - {{ booking.end_time|time:"H:i" }}</p>
+                        </td>
+                        <td class="py-4 px-4 text-slate-700">
+                            {% if booking.reason %}
+                                <p>{{ booking.reason }}</p>
+                            {% else %}
+                                <span class="text-gray-400">-</span>
+                            {% endif %}
+                        </td>
+                        <td class="py-4 px-4">
+                            {% if booking.status == 'CONFIRMED' %}
+                                <span class="inline-block bg-blue-100 text-blue-800 px-3 py-1 rounded-full text-sm font-semibold">
+                                    <i class="fas fa-check"></i> Confirmed
+                                </span>
+                            {% elif booking.status == 'PENDING' %}
+                                <span class="inline-block bg-yellow-100 text-yellow-800 px-3 py-1 rounded-full text-sm font-semibold">
+                                    <i class="fas fa-clock"></i> Pending
+                                </span>
+                            {% elif booking.status == 'ONGOING' %}
+                                <span class="inline-block bg-purple-100 text-purple-800 px-3 py-1 rounded-full text-sm font-semibold">
+                                    <i class="fas fa-hourglass-half"></i> Ongoing
+                                </span>
+                            {% else %}
+                                <span class="inline-block bg-gray-100 text-gray-800 px-3 py-1 rounded-full text-sm font-semibold">
+                                    {{ booking.status }}
+                                </span>
+                            {% endif %}
+                        </td>
+                        <td class="py-4 px-4 text-center">
+                            <a href="{% url 'cancel-classroom-booking' booking.id %}" onclick="return confirm('Are you sure you want to cancel this booking?');" class="text-red-600 hover:text-red-800 font-semibold transition">
+                                <i class="fas fa-trash-alt"></i>
+                            </a>
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+    {% else %}
+        {% if not completed_bookings and not cancelled_bookings %}
+        <div class="bg-blue-50 rounded-lg p-8 text-center border border-blue-300 mb-8">
+            <i class="fas fa-inbox text-5xl text-blue-400 mb-4 block"></i>
+            <p class="text-blue-900 font-semibold text-lg mb-4">No bookings yet</p>
+            <p class="text-blue-700 mb-6">You don't have any upcoming bookings. Start by booking a classroom!</p>
+            <a href="{% url 'book-classroom' %}" class="inline-flex items-center space-x-2 bg-gradient-to-r from-blue-600 to-blue-700 hover:from-blue-700 hover:to-blue-800 text-white font-bold py-2 px-6 rounded-lg transition">
+                <i class="fas fa-plus-circle"></i>
+                <span>Book Now</span>
+            </a>
+        </div>
+        {% endif %}
+    {% endif %}
+
+    <!-- Completed Bookings -->
+    {% if completed_bookings %}
+    <div class="bg-white rounded-2xl shadow-lg p-6 mb-8 border-t-4 border-green-600">
+        <h2 class="text-2xl font-bold text-slate-900 mb-4 flex items-center space-x-3">
+            <div class="w-10 h-10 bg-green-600 rounded-lg flex items-center justify-center">
+                <i class="fas fa-check-double text-white"></i>
+            </div>
+            <span>Completed Bookings ({{ completed_bookings|length }})</span>
+        </h2>
+
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+            {% for booking in completed_bookings|slice:":6" %}
+            <div class="bg-gradient-to-br from-green-50 to-green-100 rounded-lg p-4 border border-green-300">
+                <div class="flex items-start justify-between mb-3">
+                    <div>
+                        <p class="font-bold text-slate-900">{{ booking.classroom.building }} - Room {{ booking.classroom.room_number }}</p>
+                        <p class="text-sm text-gray-600">{{ booking.booking_date }}</p>
+                    </div>
+                    <span class="bg-green-500 text-white text-xs font-bold px-2 py-1 rounded">
+                        <i class="fas fa-check"></i> Completed
+                    </span>
+                </div>
+                <p class="text-sm text-slate-700">
+                    <strong>Time:</strong> {{ booking.start_time|time:"H:i" }} - {{ booking.end_time|time:"H:i" }}
+                </p>
+                {% if booking.reason %}
+                    <p class="text-sm text-slate-700 mt-2">
+                        <strong>Reason:</strong> {{ booking.reason }}
+                    </p>
+                {% endif %}
+            </div>
+            {% endfor %}
+        </div>
+
+        {% if completed_bookings|length > 6 %}
+        <div class="mt-4 text-center">
+            <p class="text-gray-600 text-sm">
+                Showing 6 of {{ completed_bookings|length }} completed bookings
+            </p>
+        </div>
+        {% endif %}
+    </div>
+    {% endif %}
+
+    <!-- Cancelled Bookings -->
+    {% if cancelled_bookings %}
+    <div class="bg-white rounded-2xl shadow-lg p-6 border-t-4 border-red-600">
+        <h2 class="text-2xl font-bold text-slate-900 mb-4 flex items-center space-x-3">
+            <div class="w-10 h-10 bg-red-600 rounded-lg flex items-center justify-center">
+                <i class="fas fa-times-circle text-white"></i>
+            </div>
+            <span>Cancelled Bookings ({{ cancelled_bookings|length }})</span>
+        </h2>
+
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+            {% for booking in cancelled_bookings|slice:":6" %}
+            <div class="bg-gradient-to-br from-red-50 to-red-100 rounded-lg p-4 border border-red-300 opacity-75">
+                <div class="flex items-start justify-between mb-3">
+                    <div>
+                        <p class="font-bold text-slate-900">{{ booking.classroom.building }} - Room {{ booking.classroom.room_number }}</p>
+                        <p class="text-sm text-gray-600">{{ booking.booking_date }}</p>
+                    </div>
+                    <span class="bg-red-500 text-white text-xs font-bold px-2 py-1 rounded">
+                        <i class="fas fa-times"></i> Cancelled
+                    </span>
+                </div>
+                <p class="text-sm text-slate-700">
+                    <strong>Time:</strong> {{ booking.start_time|time:"H:i" }} - {{ booking.end_time|time:"H:i" }}
+                </p>
+                {% if booking.reason %}
+                    <p class="text-sm text-slate-700 mt-2">
+                        <strong>Reason:</strong> {{ booking.reason }}
+                    </p>
+                {% endif %}
+            </div>
+            {% endfor %}
+        </div>
+
+        {% if cancelled_bookings|length > 6 %}
+        <div class="mt-4 text-center">
+            <p class="text-gray-600 text-sm">
+                Showing 6 of {{ cancelled_bookings|length }} cancelled bookings
+            </p>
+        </div>
+        {% endif %}
+    </div>
+    {% endif %}
+</div>
+{% endblock %}

@@ -1,0 +1,159 @@
+{% extends 'base.html' %}
+
+{% block title %}Attendance History - Academic Assistant{% endblock %}
+
+{% block content %}
+<div class="min-h-screen bg-gray-50 py-12 px-4 sm:px-6 lg:px-8">
+    <div class="max-w-6xl mx-auto">
+        <!-- Page Header -->
+        <div class="mb-8">
+            <a href="{% url 'attendance-dashboard' %}" class="text-blue-600 hover:text-blue-700 mb-4 inline-flex items-center">
+                <svg class="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7"></path>
+                </svg>
+                Back to Dashboard
+            </a>
+            <h1 class="text-3xl font-bold text-gray-900">Attendance History</h1>
+            <p class="text-gray-600 mt-2">View and manage your attendance records</p>
+        </div>
+
+        <!-- Filters -->
+        <div class="bg-white rounded-lg shadow-md p-6 mb-8">
+            <form method="get" class="grid grid-cols-1 md:grid-cols-3 gap-4">
+                <!-- Course Filter -->
+                <div>
+                    <label for="filterCourse" class="block text-sm font-medium text-gray-900 mb-2">Filter by Course</label>
+                    <select name="class_routine" id="filterCourse" class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500">
+                        <option value="">All Courses</option>
+                        {% for routine in class_routines %}
+                            <option value="{{ routine.id }}" {% if request.GET.class_routine|stringformat:"s" == routine.id|stringformat:"s" %}selected{% endif %}>
+                                {{ routine.class_code }} ({{ routine.day_name }})
+                            </option>
+                        {% endfor %}
+                    </select>
+                </div>
+
+                <!-- Date From -->
+                <div>
+                    <label for="dateFrom" class="block text-sm font-medium text-gray-900 mb-2">From Date</label>
+                    <input type="date" name="date_from" id="dateFrom" class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500" value="{{ request.GET.date_from }}">
+                </div>
+
+                <!-- Date To -->
+                <div>
+                    <label for="dateTo" class="block text-sm font-medium text-gray-900 mb-2">To Date</label>
+                    <input type="date" name="date_to" id="dateTo" class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500" value="{{ request.GET.date_to }}">
+                </div>
+
+                <!-- Submit Button -->
+                <div class="flex items-end gap-2">
+                    <button type="submit" class="flex-1 bg-blue-600 text-white py-2 rounded-lg hover:bg-blue-700 transition-colors font-medium">
+                        Filter
+                    </button>
+                    <a href="{% url 'attendance-history' %}" class="px-4 py-2 bg-gray-200 text-gray-900 rounded-lg hover:bg-gray-300 transition-colors font-medium">
+                        Reset
+                    </a>
+                </div>
+            </form>
+        </div>
+
+        <!-- Attendance Records Table -->
+        <div class="bg-white rounded-lg shadow-md overflow-hidden">
+            {% if attendances %}
+                <div class="overflow-x-auto">
+                    <table class="w-full">
+                        <thead class="bg-gray-100 border-b border-gray-200">
+                            <tr>
+                                <th class="px-6 py-3 text-left text-sm font-semibold text-gray-900">Course</th>
+                                <th class="px-6 py-3 text-left text-sm font-semibold text-gray-900">Date</th>
+                                <th class="px-6 py-3 text-left text-sm font-semibold text-gray-900">Intake</th>
+                                <th class="px-6 py-3 text-left text-sm font-semibold text-gray-900">Section</th>
+                                <th class="px-6 py-3 text-center text-sm font-semibold text-gray-900">Status</th>
+                                <th class="px-6 py-3 text-center text-sm font-semibold text-gray-900">Actions</th>
+                            </tr>
+                        </thead>
+                        <tbody class="divide-y divide-gray-200">
+                            {% for attendance in attendances %}
+                                <tr class="hover:bg-gray-50 transition-colors">
+                                    <td class="px-6 py-4">
+                                        <div>
+                                            <p class="font-medium text-gray-900">{{ attendance.class_routine.course_code }}</p>
+                                            <p class="text-sm text-gray-600">{{ attendance.class_routine.course_name }}</p>
+                                        </div>
+                                    </td>
+                                    <td class="px-6 py-4 text-gray-900">
+                                        {{ attendance.attendance_date|date:"M d, Y" }}
+                                    </td>
+                                    <td class="px-6 py-4 text-gray-900">
+                                        {{ attendance.intake }}
+                                    </td>
+                                    <td class="px-6 py-4 text-gray-900">
+                                        {{ attendance.section }}
+                                    </td>
+                                    <td class="px-6 py-4 text-center">
+                                        <div>
+                                            {% if attendance.status == 'SUBMITTED' %}
+                                                {% if attendance.can_modify %}
+                                                    <span class="inline-block px-3 py-1 bg-yellow-100 text-yellow-700 rounded-full text-sm font-medium">Modifiable</span>
+                                                    <p class="text-xs text-gray-600 mt-1">{{ attendance.submitted_at|date:"H:i" }}</p>
+                                                {% else %}
+                                                    <span class="inline-block px-3 py-1 bg-red-100 text-red-700 rounded-full text-sm font-medium">Locked</span>
+                                                {% endif %}
+                                            {% else %}
+                                                <span class="inline-block px-3 py-1 bg-blue-100 text-blue-700 rounded-full text-sm font-medium">Draft</span>
+                                            {% endif %}
+                                        </div>
+                                    </td>
+                                    <td class="px-6 py-4 text-center">
+                                        <div class="flex gap-2 justify-center">
+                                            <a href="{% url 'attendance-view-details' attendance.id %}" class="px-3 py-1 bg-blue-100 text-blue-600 hover:bg-blue-200 rounded transition-colors text-sm font-medium">
+                                                View
+                                            </a>
+                                            {% if attendance.can_modify and attendance.status == 'SUBMITTED' %}
+                                                <a href="{% url 'attendance-mark-students' attendance.id %}" class="px-3 py-1 bg-orange-100 text-orange-600 hover:bg-orange-200 rounded transition-colors text-sm font-medium">
+                                                    Edit
+                                                </a>
+                                            {% endif %}
+                                            <button type="button" onclick="printAttendance({{ attendance.id }})" class="px-3 py-1 bg-green-100 text-green-600 hover:bg-green-200 rounded transition-colors text-sm font-medium">
+                                                Print
+                                            </button>
+                                        </div>
+                                    </td>
+                                </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+            {% else %}
+                <div class="p-8 text-center">
+                    <svg class="w-12 h-12 text-gray-400 mx-auto mb-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"></path>
+                    </svg>
+                    <h3 class="text-gray-900 font-medium text-lg">No attendance records found</h3>
+                    <p class="text-gray-600 text-sm mt-2">
+                        {% if request.GET.class_routine or request.GET.date_from or request.GET.date_to %}
+                            No records match your filter criteria.
+                        {% else %}
+                            Start by <a href="{% url 'attendance-mark' %}" class="text-blue-600 hover:text-blue-700">marking attendance</a>.
+                        {% endif %}
+                    </p>
+                </div>
+            {% endif %}
+        </div>
+    </div>
+</div>
+
+<script>
+function printAttendance(attendanceId) {
+    // Navigate to view details page with print trigger
+    window.location.href = '/faculty/attendance/view/' + attendanceId + '/?print=true';
+}
+
+// Auto-trigger print if print parameter is in URL
+if (new URLSearchParams(window.location.search).has('print')) {
+    setTimeout(() => {
+        window.print();
+    }, 500);
+}
+</script>
+{% endblock %}
